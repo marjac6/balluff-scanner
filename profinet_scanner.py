@@ -26,7 +26,6 @@ def build_dcp_identify_request():
 
 
 def extract_profinet_payload(packet):
-    """Wyciąga payload Profinet z ramki — obsługuje zwykłe i VLAN (0x8100)."""
     raw = bytes(packet)
     idx = raw.find(b'\x88\x92')
     if idx == -1:
@@ -37,29 +36,21 @@ def extract_profinet_payload(packet):
 
 
 def parse_dcp_payload(src_mac, payload):
-    """Parsuje payload DCP Identify Response."""
     try:
         offset = 0
-
-        # Frame ID
         frame_id = struct.unpack_from(">H", payload, offset)[0]
         offset += 2
         if frame_id not in (0xFEFD, 0xFEFF):
             return None
-
-        # Service ID + Type
         service_id   = payload[offset]
         service_type = payload[offset + 1]
         offset += 2
         if service_id != 0x05 or service_type != 0x01:
             return None
-
-        # XID (4 bajty) + response_delay (2) + data_length (2)
         offset += 4  # xid
         offset += 2  # response delay
         data_length = struct.unpack_from(">H", payload, offset)[0]
         offset += 2
-
         result = {
             "mac":             src_mac,
             "ip":              "",
@@ -71,7 +62,6 @@ def parse_dcp_payload(src_mac, payload):
             "protocol":        "Profinet DCP",
             "adapter":         "",
         }
-
         end = offset + data_length
         while offset + 4 <= end and offset + 4 <= len(payload):
             opt    = payload[offset]
@@ -79,36 +69,28 @@ def parse_dcp_payload(src_mac, payload):
             length = struct.unpack_from(">H", payload, offset + 2)[0]
             offset += 4
             block_data = payload[offset:offset + length]
-            offset += length + (length % 2)  # padding
-
-            if (opt, subopt) == (0x01, 0x02):  # IP
+            offset += length + (length % 2)
+            if (opt, subopt) == (0x01, 0x02):
                 if len(block_data) >= 8:
                     ip_bytes = block_data[2:6]
                     result["ip"] = ".".join(str(b) for b in ip_bytes)
-
-            elif (opt, subopt) == (0x02, 0x01):  # NameOfStation
+            elif (opt, subopt) == (0x02, 0x01):
                 result["name_of_station"] = block_data[2:].decode("ascii", errors="ignore").rstrip("\x00")
-
-            elif (opt, subopt) == (0x02, 0x02):  # VendorID + DeviceID
+            elif (opt, subopt) == (0x02, 0x02):
                 if len(block_data) >= 6:
                     vendor = struct.unpack_from(">H", block_data, 2)[0]
                     device = struct.unpack_from(">H", block_data, 4)[0]
                     result["vendor_id"] = f"0x{vendor:04X}"
                     result["device_id"] = f"0x{device:04X}"
-
-            elif (opt, subopt) == (0x03, 0x04):  # NameOfFamily
+            elif (opt, subopt) == (0x03, 0x04):
                 result["device_family"] = block_data[2:].decode("ascii", errors="ignore").rstrip("\x00")
-
-            elif (opt, subopt) == (0x02, 0x07):  # firmware
+            elif (opt, subopt) == (0x02, 0x07):
                 result["firmware"] = block_data[2:].decode("ascii", errors="ignore").rstrip("\x00")
-
-            elif (opt, subopt) == (0x02, 0x03):  # NameOfDevice
+            elif (opt, subopt) == (0x02, 0x03):
                 result["firmware"] = block_data[2:].decode("ascii", errors="ignore").rstrip("\x00")
-
         return result if result["mac"] else None
-
     except Exception as e:
-        print(f"Błąd parsowania DCP: {e}")
+        print(f"Blad parsowania DCP: {e}")
         return None
 
 
@@ -118,10 +100,11 @@ def send_dcp_identify(adapter_name, stop_event):
         pkt = Ether(dst=PROFINET_MULTICAST, type=PROFINET_ETHERTYPE) / Raw(load=payload)
         sendp(pkt, iface=adapter_name, verbose=False)
     except Exception as e:
-        print(f"Błąd wysyłania DCP na {adapter_name}: {e}")
+        print(f"Blad wysylania DCP na {adapter_name}: {e}")
 
 
-def listen_dcp_responses(adapter_name, callback, stop_event, timeout=5):
+def listen_dcp_responses(adapter_name, callback, stop_event, burst_timeout=3):
+
     def handler(packet):
         if stop_event.is_set():
             return
@@ -135,22 +118,44 @@ def listen_dcp_responses(adapter_name, callback, stop_event, timeout=5):
             result["adapter"] = adapter_name
             callback(result)
 
-    try:
-        sniff(
-            iface=adapter_name,
-            prn=handler,
-            stop_filter=lambda x: stop_event.is_set(),
-            timeout=timeout,
-            store=False
-        )
-    except Exception as e:
-        if "not found" not in str(e).lower():
-            print(f"Błąd nasłuchiwania DCP na {adapter_name}: {e}")
+    while not stop_event.is_set():
+        try:
+            sniff(
+                iface=adapter_name,
+                prn=handler,
+                stop_filter=lambda x: stop_event.is_set(),
+                timeout=burst_timeout,
+                store=False
+            )
+        except Exception as e:
+            if "not found" not in str(e).lower():
+                print(f"Blad nasluchiwania DCP na {adapter_name}: {e}")
+            break
+
+
+def _dcp_scan_loop(adapter_name, callback, stop_event, repeat_interval=5):
+
+    import time
+
+    listen_thread = threading.Thread(
+        target=listen_dcp_responses,
+        args=(adapter_name, callback, stop_event),
+        daemon=True
+    )
+    listen_thread.start()
+
+    while not stop_event.is_set():
+        send_dcp_identify(adapter_name, stop_event)
+        for _ in range(int(repeat_interval / 0.2)):
+            if stop_event.is_set():
+                break
+            time.sleep(0.2)
+
+    listen_thread.join(timeout=4)
 
 
 def start_dcp_scan(adapter_name, callback, stop_event):
-    send_dcp_identify(adapter_name, stop_event)
-    listen_dcp_responses(adapter_name, callback, stop_event)
+    _dcp_scan_loop(adapter_name, callback, stop_event)
 
 
 def start_dcp_scan_all(callback, stop_event):
@@ -162,7 +167,7 @@ def start_dcp_scan_all(callback, stop_event):
         if not name:
             continue
         t = threading.Thread(
-            target=start_dcp_scan,
+            target=_dcp_scan_loop,
             args=(name, callback, stop_event),
             daemon=True
         )

@@ -1,29 +1,61 @@
-# gui.py
+# gui.py  —  v1.1.0
 import tkinter as tk
 from tkinter import ttk, scrolledtext
 import threading
+import webbrowser
 from scanner import get_adapters, start_scan, start_active_scan, send_arp_probe
 from profinet_scanner import start_dcp_scan_all, start_dcp_scan
+from svglib.svglib import svg2rlg
+from reportlab.graphics import renderPM
+from PIL import Image, ImageTk
+from io import BytesIO
+
+
+APP_VERSION = "0.2.0"
+REPO_URL    = "https://github.com/marjac6/balluff-scanner"
+
+CHANGELOG = """\
+v0.2.0 (2025-06)
+  • Deleted auto-restart function
+  • Fixed DCP scanning for "All adapters"
+  • Added cyclical DCP scan
+  • Versioning, changelog and GitHub link
+  • Scalable window
+
+v0.1.0 (2025-05)
+  • First version
+  • Detection for Balluff network modules (ARP + Profinet DCP)
+"""
 
 
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Balluff / BNI Device Scanner")
-        self.root.geometry("800x600")
+        self.root.title(f"Balluff / BNI Device Scanner  v{APP_VERSION}")
+        self.root.geometry("860x620")
         self.root.resizable(True, True)
-
+        self.root.minsize(640, 480)
         self.stop_event = threading.Event()
-        self.scanning = False
+        self.scanning   = False
         self.found_devices = []
+       #Logo GitHub SVG
+        def svg_to_tkimg(svg_path, size=(16,16)):
+            drawing = svg2rlg(svg_path)
+            buf = BytesIO()
+            renderPM.drawToFile(drawing, buf, fmt="PNG")
+            buf.seek(0)
+            img = Image.open(buf).resize(size, Image.Resampling.LANCZOS)
+            return ImageTk.PhotoImage(img)
 
-        self.auto_refresh = tk.BooleanVar(value=False)
-        self.refresh_interval = tk.IntVar(value=30)
-        self._auto_refresh_job = None
+        self.github_logo = svg_to_tkimg("github.svg")  # ścieżka do pliku SVG
+
 
         self._build_ui()
         self._load_adapters()
+       
 
+
+    # ────────────────────────────────────────────────────────────
     def _build_ui(self):
         # ── Górny panel: wybór adaptera ──────────────────────────
         top = tk.LabelFrame(self.root, text="Adapter sieciowy", padx=8, pady=6)
@@ -32,48 +64,40 @@ class App:
         tk.Label(top, text="Skanuj:").grid(row=0, column=0, sticky="w")
 
         self.adapter_var = tk.StringVar(value="Wszystkie adaptery")
-        self.adapter_cb = ttk.Combobox(top, textvariable=self.adapter_var, width=55, state="readonly")
+        self.adapter_cb = ttk.Combobox(
+            top, textvariable=self.adapter_var, width=55, state="readonly"
+        )
         self.adapter_cb.grid(row=0, column=1, padx=8)
 
-        self.btn_scan = tk.Button(top, text="▶  Start", width=12,
-                                   bg="#2e7d32", fg="white", font=("Segoe UI", 9, "bold"),
-                                   command=self.toggle_scan)
+        self.btn_scan = tk.Button(
+            top, text="▶  Start", width=12,
+            bg="#2e7d32", fg="white", font=("Segoe UI", 9, "bold"),
+            command=self.toggle_scan
+        )
         self.btn_scan.grid(row=0, column=2, padx=4)
 
-        self.btn_clear = tk.Button(top, text="🗑  Wyczyść", width=12,
-                                    command=self.clear_results)
+        self.btn_clear = tk.Button(
+            top, text="🗑  Wyczyść", width=12, command=self.clear_results
+        )
         self.btn_clear.grid(row=0, column=3, padx=4)
-
-        # ── Panel auto-odświeżania ────────────────────────────────
-        refresh_frame = tk.LabelFrame(self.root, text="Auto-odświeżanie", padx=8, pady=4)
-        refresh_frame.pack(fill="x", padx=10, pady=(0, 4))
-
-        self.chk_auto = tk.Checkbutton(refresh_frame, text="Włącz",
-                                        variable=self.auto_refresh,
-                                        command=self._on_auto_refresh_toggle)
-        self.chk_auto.grid(row=0, column=0, padx=(0, 8))
-
-        tk.Label(refresh_frame, text="Interwał (s):").grid(row=0, column=1)
-        self.spin_interval = tk.Spinbox(refresh_frame, from_=10, to=300,
-                                         textvariable=self.refresh_interval,
-                                         width=5)
-        self.spin_interval.grid(row=0, column=2, padx=4)
-
-        self.lbl_next = tk.Label(refresh_frame, text="", fg="gray")
-        self.lbl_next.grid(row=0, column=3, padx=12)
 
         # ── Status ───────────────────────────────────────────────
         self.status_var = tk.StringVar(value="Gotowy")
-        status_bar = tk.Label(self.root, textvariable=self.status_var,
-                               anchor="w", relief="sunken", font=("Segoe UI", 8))
-        status_bar.pack(fill="x", padx=10, pady=(0, 4))
+        tk.Label(
+            self.root, textvariable=self.status_var,
+            anchor="w", relief="sunken", font=("Segoe UI", 8)
+        ).pack(fill="x", padx=10, pady=(0, 4))
 
-# ── Tabela wyników ───────────────────────────────────────
-        table_frame = tk.LabelFrame(self.root, text="Znalezione urządzenia", padx=8, pady=6)
+        # ── Tabela wyników ───────────────────────────────────────
+        table_frame = tk.LabelFrame(
+            self.root, text="Znalezione urządzenia", padx=8, pady=6
+        )
         table_frame.pack(fill="both", expand=True, padx=10, pady=4)
 
         cols = ("ip", "mac", "name", "protocol", "vendor_id", "device_id", "adapter")
-        self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", height=8)
+        self.tree = ttk.Treeview(
+            table_frame, columns=cols, show="headings", height=8
+        )
         self.tree.heading("ip",        text="Adres IP")
         self.tree.heading("mac",       text="Adres MAC")
         self.tree.heading("name",      text="Nazwa / Producent")
@@ -88,6 +112,7 @@ class App:
         self.tree.column("vendor_id", width=70)
         self.tree.column("device_id", width=70)
         self.tree.column("adapter",   width=170)
+
         scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scroll.set)
         self.tree.pack(side="left", fill="both", expand=True)
@@ -95,12 +120,60 @@ class App:
 
         # ── Log ──────────────────────────────────────────────────
         log_frame = tk.LabelFrame(self.root, text="Log", padx=8, pady=4)
-        log_frame.pack(fill="x", padx=10, pady=(4, 10))
+        log_frame.pack(fill="x", padx=10, pady=(4, 2))
 
-        self.log = scrolledtext.ScrolledText(log_frame, height=5,
-                                              font=("Consolas", 8), state="disabled")
+        self.log = scrolledtext.ScrolledText(
+            log_frame, height=5, font=("Consolas", 8), state="disabled"
+        )
         self.log.pack(fill="x")
 
+        # ── Pasek dolny: wersja + repo ───────────────────────────
+        bottom = tk.Frame(self.root, bg="#f0f0f0", bd=1, relief="sunken")
+        bottom.pack(fill="x", padx=0, pady=(2, 0))
+
+        lbl_ver = tk.Label(
+            bottom, text=f"v{APP_VERSION}",
+            font=("Consolas", 7), fg="#888", bg="#f0f0f0"
+        )
+        lbl_ver.pack(side="left", padx=8)
+
+        btn_changelog = tk.Button(
+            bottom, text="changelog",
+            font=("Segoe UI", 7), fg="#555", bg="#f0f0f0",
+            relief="flat", cursor="hand2",
+            command=self._show_changelog
+        )
+        btn_changelog.pack(side="left", padx=2)
+
+        # GitHub logo (Unicode) + link
+        repo_frame = tk.Frame(bottom, bg="#f0f0f0")
+        repo_frame.pack(side="right", padx=8)
+
+        tk.Label(
+            repo_frame, image=self.github_logo,  # placeholder — zastąp SVG-em jeśli chcesz
+            font=("Segoe UI", 8), fg="#888", bg="#f0f0f0"
+        ).pack(side="left")
+
+        lnk = tk.Label(
+            repo_frame, text="github: balluff-scanner",
+            font=("Segoe UI", 7, "underline"), fg="#0969da", bg="#f0f0f0",
+            cursor="hand2"
+        )
+        lnk.pack(side="left", padx=2)
+        lnk.bind("<Button-1>", lambda e: webbrowser.open(REPO_URL))
+
+    # ────────────────────────────────────────────────────────────
+    def _show_changelog(self):
+        win = tk.Toplevel(self.root)
+        win.title("Changelog")
+        win.geometry("480x300")
+        win.resizable(False, False)
+        st = scrolledtext.ScrolledText(win, font=("Consolas", 8), state="normal")
+        st.pack(fill="both", expand=True, padx=8, pady=8)
+        st.insert("1.0", CHANGELOG)
+        st.configure(state="disabled")
+
+    # ────────────────────────────────────────────────────────────
     def _load_adapters(self):
         adapters = get_adapters()
         self.adapters = adapters
@@ -120,6 +193,7 @@ class App:
 
     def on_device_found(self, info):
         self.root.after(0, self._add_device, info)
+
     def on_profinet_found(self, info):
         self.root.after(0, self._add_profinet_device, info)
 
@@ -160,6 +234,7 @@ class App:
             f"IP={info.get('ip', '?')}  MAC={info.get('mac', '?')}"
         )
 
+    # ────────────────────────────────────────────────────────────
     def toggle_scan(self):
         if not self.scanning:
             self._start_scan()
@@ -170,12 +245,12 @@ class App:
         self.scanning = True
         self.stop_event.clear()
         self.btn_scan.config(text="⏹  Stop", bg="#c62828")
-        self.status_var.set("⏳ Skanowanie w toku...")
+        self.status_var.set("⏳ Skanowanie w toku…")
 
         selected = self.adapter_cb.current()
 
         if selected == 0:
-            self.log_message("Uruchamiam ARP + Profinet DCP na wszystkich adapterach...")
+            self.log_message("Uruchamiam ARP + Profinet DCP na wszystkich adapterach…")
 
             threading.Thread(
                 target=start_active_scan,
@@ -191,7 +266,7 @@ class App:
 
         else:
             adapter = self.adapters[selected - 1]
-            self.log_message(f"Uruchamiam ARP + Profinet DCP: {adapter['description']}...")
+            self.log_message(f"Uruchamiam ARP + Profinet DCP: {adapter['description']}…")
 
             threading.Thread(
                 target=start_scan,
@@ -223,44 +298,3 @@ class App:
         for row in self.tree.get_children():
             self.tree.delete(row)
         self.log_message("Wyniki wyczyszczone.")
-
-    def _on_auto_refresh_toggle(self):
-        if self.auto_refresh.get():
-            self.log_message("Auto-odświeżanie włączone.")
-            self._schedule_next_refresh()
-        else:
-            self.log_message("Auto-odświeżanie wyłączone.")
-            self._cancel_auto_refresh()
-            self.lbl_next.config(text="")
-
-    def _schedule_next_refresh(self):
-        interval = self.refresh_interval.get() * 1000
-        self._countdown(self.refresh_interval.get())
-        self._auto_refresh_job = self.root.after(interval, self._auto_refresh_cycle)
-
-    def _cancel_auto_refresh(self):
-        if self._auto_refresh_job:
-            self.root.after_cancel(self._auto_refresh_job)
-            self._auto_refresh_job = None
-
-    def _auto_refresh_cycle(self):
-        if not self.auto_refresh.get():
-            return
-        self.log_message("⟳ Auto-odświeżanie — restart skanowania...")
-        if self.scanning:
-            self._stop_scan()
-            self.root.after(500, self._restart_after_stop)
-        else:
-            self._start_scan()
-            self._schedule_next_refresh()
-
-    def _restart_after_stop(self):
-        self._start_scan()
-        self._schedule_next_refresh()
-
-    def _countdown(self, seconds_left):
-        if not self.auto_refresh.get():
-            return
-        self.lbl_next.config(text=f"Następne odświeżenie za: {seconds_left}s")
-        if seconds_left > 0:
-            self.root.after(1000, self._countdown, seconds_left - 1)
