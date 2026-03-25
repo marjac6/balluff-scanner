@@ -1,12 +1,25 @@
 # -*- mode: python ; coding: utf-8 -*-
+import importlib.util
 
+# Read version at build time
+_spec = importlib.util.spec_from_file_location("version", "version.py")
+_mod  = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+VERSION = _mod.__version__
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('gui.py', '.'), ('scanner.py', '.'), ('profinet_scanner.py', '.')],
-    hiddenimports=['scapy.all', 'tkinter'],
+    datas=[
+        ('gui.py',             '.'),
+        ('scanner.py',         '.'),
+        ('profinet_scanner.py','.'),
+        ('version.py',         '.'),
+        ('CHANGELOG.md',       '.'),
+        ('github.svg',         '.'),
+    ],
+    hiddenimports=['scapy.all', 'tkinter', 'svglib', 'reportlab', 'PIL'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -22,7 +35,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='BalluffScanner',
+    name=f'BalluffScanner-v{VERSION}',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

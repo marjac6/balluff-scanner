@@ -1,45 +1,41 @@
-# gui.py  —  v1.1.0
+# gui.py
 import tkinter as tk
 from tkinter import ttk, scrolledtext
 import threading
 import webbrowser
-from scanner import get_adapters, start_scan, start_active_scan, send_arp_probe
-from profinet_scanner import start_dcp_scan_all, start_dcp_scan
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 from PIL import Image, ImageTk
 from io import BytesIO
+from version import __version__
+from scanner import get_adapters, start_scan, start_active_scan, send_arp_probe
+from profinet_scanner import start_dcp_scan_all, start_dcp_scan
 
+REPO_URL = "https://github.com/marjac6/balluff-scanner"
 
-APP_VERSION = "0.2.0"
-REPO_URL    = "https://github.com/marjac6/balluff-scanner"
+def _load_changelog():
+    try:
+        with open("CHANGELOG.md", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "(CHANGELOG.md not found)"
 
-CHANGELOG = """\
-v0.2.0 (2025-06)
-  • Deleted auto-restart function
-  • Fixed DCP scanning for "All adapters"
-  • Added cyclical DCP scan
-  • Versioning, changelog and GitHub link
-  • Scalable window
-
-v0.1.0 (2025-05)
-  • First version
-  • Detection for Balluff network modules (ARP + Profinet DCP)
-"""
+CHANGELOG = _load_changelog()
 
 
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title(f"Balluff / BNI Device Scanner  v{APP_VERSION}")
+        self.root.title(f"Balluff / BNI Device Scanner  v{__version__}")
         self.root.geometry("860x620")
         self.root.resizable(True, True)
         self.root.minsize(640, 480)
-        self.stop_event = threading.Event()
-        self.scanning   = False
+        self.stop_event    = threading.Event()
+        self.scanning      = False
         self.found_devices = []
-       #Logo GitHub SVG
-        def svg_to_tkimg(svg_path, size=(16,16)):
+
+        # Load GitHub logo from SVG
+        def svg_to_tkimg(svg_path, size=(16, 16)):
             drawing = svg2rlg(svg_path)
             buf = BytesIO()
             renderPM.drawToFile(drawing, buf, fmt="PNG")
@@ -47,26 +43,20 @@ class App:
             img = Image.open(buf).resize(size, Image.Resampling.LANCZOS)
             return ImageTk.PhotoImage(img)
 
-        self.github_logo = svg_to_tkimg("github.svg")  # ścieżka do pliku SVG
-
+        self.github_logo = svg_to_tkimg("github.svg")
 
         self._build_ui()
         self._load_adapters()
-       
 
-
-    # ────────────────────────────────────────────────────────────
     def _build_ui(self):
-        # ── Górny panel: wybór adaptera ──────────────────────────
+        # -- adapter selector --
         top = tk.LabelFrame(self.root, text="Adapter sieciowy", padx=8, pady=6)
         top.pack(fill="x", padx=10, pady=(10, 4))
 
         tk.Label(top, text="Skanuj:").grid(row=0, column=0, sticky="w")
 
         self.adapter_var = tk.StringVar(value="Wszystkie adaptery")
-        self.adapter_cb = ttk.Combobox(
-            top, textvariable=self.adapter_var, width=55, state="readonly"
-        )
+        self.adapter_cb  = ttk.Combobox(top, textvariable=self.adapter_var, width=55, state="readonly")
         self.adapter_cb.grid(row=0, column=1, padx=8)
 
         self.btn_scan = tk.Button(
@@ -76,28 +66,22 @@ class App:
         )
         self.btn_scan.grid(row=0, column=2, padx=4)
 
-        self.btn_clear = tk.Button(
-            top, text="🗑  Wyczyść", width=12, command=self.clear_results
-        )
+        self.btn_clear = tk.Button(top, text="🗑  Wyczyść", width=12, command=self.clear_results)
         self.btn_clear.grid(row=0, column=3, padx=4)
 
-        # ── Status ───────────────────────────────────────────────
+        # -- status bar --
         self.status_var = tk.StringVar(value="Gotowy")
         tk.Label(
             self.root, textvariable=self.status_var,
             anchor="w", relief="sunken", font=("Segoe UI", 8)
         ).pack(fill="x", padx=10, pady=(0, 4))
 
-        # ── Tabela wyników ───────────────────────────────────────
-        table_frame = tk.LabelFrame(
-            self.root, text="Znalezione urządzenia", padx=8, pady=6
-        )
+        # -- results table --
+        table_frame = tk.LabelFrame(self.root, text="Znalezione urządzenia", padx=8, pady=6)
         table_frame.pack(fill="both", expand=True, padx=10, pady=4)
 
         cols = ("ip", "mac", "name", "protocol", "vendor_id", "device_id", "adapter")
-        self.tree = ttk.Treeview(
-            table_frame, columns=cols, show="headings", height=8
-        )
+        self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", height=8)
         self.tree.heading("ip",        text="Adres IP")
         self.tree.heading("mac",       text="Adres MAC")
         self.tree.heading("name",      text="Nazwa / Producent")
@@ -118,51 +102,41 @@ class App:
         self.tree.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
 
-        # ── Log ──────────────────────────────────────────────────
+        # -- log --
         log_frame = tk.LabelFrame(self.root, text="Log", padx=8, pady=4)
         log_frame.pack(fill="x", padx=10, pady=(4, 2))
 
-        self.log = scrolledtext.ScrolledText(
-            log_frame, height=5, font=("Consolas", 8), state="disabled"
-        )
+        self.log = scrolledtext.ScrolledText(log_frame, height=5, font=("Consolas", 8), state="disabled")
         self.log.pack(fill="x")
 
-        # ── Pasek dolny: wersja + repo ───────────────────────────
+        # -- bottom bar: version + repo link --
         bottom = tk.Frame(self.root, bg="#f0f0f0", bd=1, relief="sunken")
         bottom.pack(fill="x", padx=0, pady=(2, 0))
 
-        lbl_ver = tk.Label(
-            bottom, text=f"v{APP_VERSION}",
+        tk.Label(
+            bottom, text=f"v{__version__}",
             font=("Consolas", 7), fg="#888", bg="#f0f0f0"
-        )
-        lbl_ver.pack(side="left", padx=8)
+        ).pack(side="left", padx=8)
 
-        btn_changelog = tk.Button(
+        tk.Button(
             bottom, text="changelog",
             font=("Segoe UI", 7), fg="#555", bg="#f0f0f0",
             relief="flat", cursor="hand2",
             command=self._show_changelog
-        )
-        btn_changelog.pack(side="left", padx=2)
+        ).pack(side="left", padx=2)
 
-        # GitHub logo (Unicode) + link
         repo_frame = tk.Frame(bottom, bg="#f0f0f0")
         repo_frame.pack(side="right", padx=8)
 
-        tk.Label(
-            repo_frame, image=self.github_logo,  # placeholder — zastąp SVG-em jeśli chcesz
-            font=("Segoe UI", 8), fg="#888", bg="#f0f0f0"
-        ).pack(side="left")
+        tk.Label(repo_frame, image=self.github_logo, bg="#f0f0f0").pack(side="left")
 
         lnk = tk.Label(
             repo_frame, text="github: balluff-scanner",
-            font=("Segoe UI", 7, "underline"), fg="#0969da", bg="#f0f0f0",
-            cursor="hand2"
+            font=("Segoe UI", 7, "underline"), fg="#0969da", bg="#f0f0f0", cursor="hand2"
         )
         lnk.pack(side="left", padx=2)
         lnk.bind("<Button-1>", lambda e: webbrowser.open(REPO_URL))
 
-    # ────────────────────────────────────────────────────────────
     def _show_changelog(self):
         win = tk.Toplevel(self.root)
         win.title("Changelog")
@@ -173,17 +147,15 @@ class App:
         st.insert("1.0", CHANGELOG)
         st.configure(state="disabled")
 
-    # ────────────────────────────────────────────────────────────
     def _load_adapters(self):
-        adapters = get_adapters()
-        self.adapters = adapters
+        self.adapters = get_adapters()
         names = ["Wszystkie adaptery"] + [
             f"{a['description']}  [{', '.join(a['ips']) or 'brak IP'}]"
-            for a in adapters
+            for a in self.adapters
         ]
         self.adapter_cb["values"] = names
         self.adapter_cb.current(0)
-        self.log_message(f"Znaleziono {len(adapters)} adapterów.")
+        self.log_message(f"Found {len(self.adapters)} adapter(s).")
 
     def log_message(self, msg):
         self.log.configure(state="normal")
@@ -234,7 +206,6 @@ class App:
             f"IP={info.get('ip', '?')}  MAC={info.get('mac', '?')}"
         )
 
-    # ────────────────────────────────────────────────────────────
     def toggle_scan(self):
         if not self.scanning:
             self._start_scan()
@@ -250,51 +221,25 @@ class App:
         selected = self.adapter_cb.current()
 
         if selected == 0:
-            self.log_message("Uruchamiam ARP + Profinet DCP na wszystkich adapterach…")
-
-            threading.Thread(
-                target=start_active_scan,
-                args=(self.on_device_found, self.stop_event),
-                daemon=True
-            ).start()
-
-            threading.Thread(
-                target=start_dcp_scan_all,
-                args=(self.on_profinet_found, self.stop_event),
-                daemon=True
-            ).start()
-
+            self.log_message("Starting ARP + Profinet DCP on all adapters…")
+            threading.Thread(target=start_active_scan,  args=(self.on_device_found,   self.stop_event), daemon=True).start()
+            threading.Thread(target=start_dcp_scan_all, args=(self.on_profinet_found, self.stop_event), daemon=True).start()
         else:
             adapter = self.adapters[selected - 1]
-            self.log_message(f"Uruchamiam ARP + Profinet DCP: {adapter['description']}…")
-
-            threading.Thread(
-                target=start_scan,
-                args=(adapter["name"], self.on_device_found, self.stop_event),
-                daemon=True
-            ).start()
-
-            threading.Thread(
-                target=send_arp_probe,
-                args=(adapter["name"], self.stop_event),
-                daemon=True
-            ).start()
-
-            threading.Thread(
-                target=start_dcp_scan,
-                args=(adapter["name"], self.on_profinet_found, self.stop_event),
-                daemon=True
-            ).start()
+            self.log_message(f"Starting ARP + Profinet DCP on: {adapter['description']}…")
+            threading.Thread(target=start_scan,     args=(adapter["name"], self.on_device_found,   self.stop_event), daemon=True).start()
+            threading.Thread(target=send_arp_probe, args=(adapter["name"], self.stop_event),                         daemon=True).start()
+            threading.Thread(target=start_dcp_scan, args=(adapter["name"], self.on_profinet_found, self.stop_event), daemon=True).start()
 
     def _stop_scan(self):
         self.scanning = False
         self.stop_event.set()
         self.btn_scan.config(text="▶  Start", bg="#2e7d32")
         self.status_var.set("Zatrzymano.")
-        self.log_message("Skanowanie zatrzymane.")
+        self.log_message("Scan stopped.")
 
     def clear_results(self):
         self.found_devices.clear()
         for row in self.tree.get_children():
             self.tree.delete(row)
-        self.log_message("Wyniki wyczyszczone.")
+        self.log_message("Results cleared.")
