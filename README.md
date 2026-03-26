@@ -101,8 +101,8 @@ The goal is to support all major protocols used by Balluff network devices. Vers
 
 | Protocol | Status |
 |---|---|
-| ARP (passive + active) | ✅ v0.1.0 |
-| Profinet DCP | ✅ v0.1.0 |
+| ARP (passive + active) | ✅ v0.2.0 |
+| Profinet DCP | ✅ v0.2.0 |
 | Modbus TCP | 🔜 planned |
 | EtherNet/IP | 🔜 planned |
 | EtherCAT | 🔜 planned |
@@ -111,7 +111,7 @@ The goal is to support all major protocols used by Balluff network devices. Vers
 
 ## Contributing
 
-This project is developed internally at Balluff. External contributions are welcome — please open an issue before submitting a pull request.
+External contributions are welcome — please open an issue before submitting a pull request.
 
 ---
 
