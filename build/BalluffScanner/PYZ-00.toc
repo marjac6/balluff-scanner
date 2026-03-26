@@ -1,6 +1,310 @@
 ('C:\\Users\\MJ\\OneDrive - Balluff '
  'GmbH\\GIT\\balluff-scanner\\build\\BalluffScanner\\PYZ-00.pyz',
- [('__future__',
+ [('PIL',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\__init__.py',
+   'PYMODULE'),
+  ('PIL.AvifImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\AvifImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.BlpImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\BlpImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.BmpImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\BmpImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.BufrStubImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\BufrStubImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.CurImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\CurImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.DcxImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\DcxImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.DdsImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\DdsImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.EpsImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\EpsImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.ExifTags',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ExifTags.py',
+   'PYMODULE'),
+  ('PIL.FitsImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\FitsImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.FliImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\FliImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.FpxImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\FpxImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.FtexImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\FtexImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.GbrImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\GbrImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.GifImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\GifImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.GimpGradientFile',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\GimpGradientFile.py',
+   'PYMODULE'),
+  ('PIL.GimpPaletteFile',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\GimpPaletteFile.py',
+   'PYMODULE'),
+  ('PIL.GribStubImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\GribStubImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.Hdf5StubImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\Hdf5StubImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.IcnsImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\IcnsImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.IcoImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\IcoImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.ImImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.Image',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\Image.py',
+   'PYMODULE'),
+  ('PIL.ImageChops',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageChops.py',
+   'PYMODULE'),
+  ('PIL.ImageCms',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageCms.py',
+   'PYMODULE'),
+  ('PIL.ImageColor',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageColor.py',
+   'PYMODULE'),
+  ('PIL.ImageFile',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageFile.py',
+   'PYMODULE'),
+  ('PIL.ImageFilter',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageFilter.py',
+   'PYMODULE'),
+  ('PIL.ImageMath',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageMath.py',
+   'PYMODULE'),
+  ('PIL.ImageMode',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageMode.py',
+   'PYMODULE'),
+  ('PIL.ImageOps',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageOps.py',
+   'PYMODULE'),
+  ('PIL.ImagePalette',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImagePalette.py',
+   'PYMODULE'),
+  ('PIL.ImageQt',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageQt.py',
+   'PYMODULE'),
+  ('PIL.ImageSequence',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageSequence.py',
+   'PYMODULE'),
+  ('PIL.ImageShow',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageShow.py',
+   'PYMODULE'),
+  ('PIL.ImageTk',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageTk.py',
+   'PYMODULE'),
+  ('PIL.ImageWin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImageWin.py',
+   'PYMODULE'),
+  ('PIL.ImtImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\ImtImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.IptcImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\IptcImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.Jpeg2KImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\Jpeg2KImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.JpegImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\JpegImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.JpegPresets',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\JpegPresets.py',
+   'PYMODULE'),
+  ('PIL.McIdasImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\McIdasImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.MicImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\MicImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.MpegImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\MpegImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.MpoImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\MpoImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.MspImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\MspImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.PaletteFile',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PaletteFile.py',
+   'PYMODULE'),
+  ('PIL.PalmImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PalmImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.PcdImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PcdImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.PcxImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PcxImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.PdfImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PdfImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.PdfParser',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PdfParser.py',
+   'PYMODULE'),
+  ('PIL.PixarImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PixarImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.PngImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PngImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.PpmImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PpmImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.PsdImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\PsdImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.QoiImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\QoiImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.SgiImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\SgiImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.SpiderImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\SpiderImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.SunImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\SunImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.TgaImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\TgaImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.TiffImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\TiffImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.TiffTags',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\TiffTags.py',
+   'PYMODULE'),
+  ('PIL.WebPImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\WebPImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.WmfImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\WmfImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.XVThumbImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\XVThumbImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.XbmImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\XbmImagePlugin.py',
+   'PYMODULE'),
+  ('PIL.XpmImagePlugin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\XpmImagePlugin.py',
+   'PYMODULE'),
+  ('PIL._binary',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\_binary.py',
+   'PYMODULE'),
+  ('PIL._deprecate',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\_deprecate.py',
+   'PYMODULE'),
+  ('PIL._typing',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\_typing.py',
+   'PYMODULE'),
+  ('PIL._util',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\_util.py',
+   'PYMODULE'),
+  ('PIL._version',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\_version.py',
+   'PYMODULE'),
+  ('PIL.features',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\PIL\\features.py',
+   'PYMODULE'),
+  ('__future__',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\__future__.py',
    'PYMODULE'),
@@ -20,6 +324,14 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\_compression.py',
    'PYMODULE'),
+  ('_ios_support',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\_ios_support.py',
+   'PYMODULE'),
+  ('_markupbase',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\_markupbase.py',
+   'PYMODULE'),
   ('_opcode_metadata',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\_opcode_metadata.py',
@@ -35,6 +347,14 @@
   ('_pydecimal',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\_pydecimal.py',
+   'PYMODULE'),
+  ('_pyrepl',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\_pyrepl\\__init__.py',
+   'PYMODULE'),
+  ('_pyrepl.pager',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\_pyrepl\\pager.py',
    'PYMODULE'),
   ('_strptime',
    'C:\\Program '
@@ -184,6 +504,10 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\base64.py',
    'PYMODULE'),
+  ('bdb',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\bdb.py',
+   'PYMODULE'),
   ('bisect',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\bisect.py',
@@ -192,9 +516,45 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\bz2.py',
    'PYMODULE'),
+  ('cairo',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\cairo\\__init__.py',
+   'PYMODULE'),
   ('calendar',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\calendar.py',
+   'PYMODULE'),
+  ('charset_normalizer',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\charset_normalizer\\__init__.py',
+   'PYMODULE'),
+  ('charset_normalizer.api',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\charset_normalizer\\api.py',
+   'PYMODULE'),
+  ('charset_normalizer.constant',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\charset_normalizer\\constant.py',
+   'PYMODULE'),
+  ('charset_normalizer.legacy',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\charset_normalizer\\legacy.py',
+   'PYMODULE'),
+  ('charset_normalizer.models',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\charset_normalizer\\models.py',
+   'PYMODULE'),
+  ('charset_normalizer.utils',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\charset_normalizer\\utils.py',
+   'PYMODULE'),
+  ('charset_normalizer.version',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\charset_normalizer\\version.py',
+   'PYMODULE'),
+  ('cmd',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\cmd.py',
    'PYMODULE'),
   ('code',
    'C:\\Program '
@@ -203,6 +563,10 @@
   ('codeop',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\codeop.py',
+   'PYMODULE'),
+  ('colorsys',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\colorsys.py',
    'PYMODULE'),
   ('concurrent',
    'C:\\Program '
@@ -235,6 +599,22 @@
   ('copy',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\copy.py',
+   'PYMODULE'),
+  ('cssselect2',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\cssselect2\\__init__.py',
+   'PYMODULE'),
+  ('cssselect2.compiler',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\cssselect2\\compiler.py',
+   'PYMODULE'),
+  ('cssselect2.parser',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\cssselect2\\parser.py',
+   'PYMODULE'),
+  ('cssselect2.tree',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\cssselect2\\tree.py',
    'PYMODULE'),
   ('csv',
    'C:\\Program '
@@ -295,6 +675,10 @@
   ('dis',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\dis.py',
+   'PYMODULE'),
+  ('doctest',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\doctest.py',
    'PYMODULE'),
   ('email',
    'C:\\Program '
@@ -384,6 +768,138 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\fractions.py',
    'PYMODULE'),
+  ('freetype',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\__init__.py',
+   'PYMODULE'),
+  ('freetype.ft_enums',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\__init__.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_color_root_transform',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_color_root_transform.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_curve_tags',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_curve_tags.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_encodings',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_encodings.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_face_flags',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_face_flags.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_fstypes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_fstypes.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_glyph_bbox_modes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_glyph_bbox_modes.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_glyph_formats',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_glyph_formats.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_kerning_modes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_kerning_modes.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_lcd_filters',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_lcd_filters.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_load_flags',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_load_flags.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_load_targets',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_load_targets.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_open_modes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_open_modes.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_outline_flags',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_outline_flags.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_pixel_modes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_pixel_modes.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_render_modes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_render_modes.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_stroker_borders',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_stroker_borders.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_stroker_linecaps',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_stroker_linecaps.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_stroker_linejoins',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_stroker_linejoins.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.ft_style_flags',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\ft_style_flags.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.tt_adobe_ids',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\tt_adobe_ids.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.tt_apple_ids',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\tt_apple_ids.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.tt_mac_ids',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\tt_mac_ids.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.tt_mac_langids',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\tt_mac_langids.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.tt_ms_ids',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\tt_ms_ids.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.tt_ms_langids',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\tt_ms_langids.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.tt_name_ids',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\tt_name_ids.py',
+   'PYMODULE'),
+  ('freetype.ft_enums.tt_platforms',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_enums\\tt_platforms.py',
+   'PYMODULE'),
+  ('freetype.ft_errors',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_errors.py',
+   'PYMODULE'),
+  ('freetype.ft_structs',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_structs.py',
+   'PYMODULE'),
+  ('freetype.ft_types',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\ft_types.py',
+   'PYMODULE'),
+  ('freetype.raw',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\freetype\\raw.py',
+   'PYMODULE'),
   ('ftplib',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\ftplib.py',
@@ -427,6 +943,10 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\html\\entities.py',
    'PYMODULE'),
+  ('html.parser',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\html\\parser.py',
+   'PYMODULE'),
   ('http',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\http\\__init__.py',
@@ -438,6 +958,10 @@
   ('http.cookiejar',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\http\\cookiejar.py',
+   'PYMODULE'),
+  ('http.server',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\http\\server.py',
    'PYMODULE'),
   ('importlib',
    'C:\\Program '
@@ -555,6 +1079,102 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\logging\\__init__.py',
    'PYMODULE'),
+  ('lxml',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\__init__.py',
+   'PYMODULE'),
+  ('lxml.ElementInclude',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\ElementInclude.py',
+   'PYMODULE'),
+  ('lxml.cssselect',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\cssselect.py',
+   'PYMODULE'),
+  ('lxml.doctestcompare',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\doctestcompare.py',
+   'PYMODULE'),
+  ('lxml.html',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\__init__.py',
+   'PYMODULE'),
+  ('lxml.html.ElementSoup',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\ElementSoup.py',
+   'PYMODULE'),
+  ('lxml.html._diffcommand',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\_diffcommand.py',
+   'PYMODULE'),
+  ('lxml.html._html5builder',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\_html5builder.py',
+   'PYMODULE'),
+  ('lxml.html._setmixin',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\_setmixin.py',
+   'PYMODULE'),
+  ('lxml.html.builder',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\builder.py',
+   'PYMODULE'),
+  ('lxml.html.clean',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\clean.py',
+   'PYMODULE'),
+  ('lxml.html.defs',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\defs.py',
+   'PYMODULE'),
+  ('lxml.html.formfill',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\formfill.py',
+   'PYMODULE'),
+  ('lxml.html.html5parser',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\html5parser.py',
+   'PYMODULE'),
+  ('lxml.html.soupparser',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\soupparser.py',
+   'PYMODULE'),
+  ('lxml.html.usedoctest',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\html\\usedoctest.py',
+   'PYMODULE'),
+  ('lxml.includes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\includes\\__init__.py',
+   'PYMODULE'),
+  ('lxml.includes.extlibs',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\includes\\extlibs\\__init__.py',
+   'PYMODULE'),
+  ('lxml.includes.libexslt',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\includes\\libexslt\\__init__.py',
+   'PYMODULE'),
+  ('lxml.includes.libxml',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\includes\\libxml\\__init__.py',
+   'PYMODULE'),
+  ('lxml.includes.libxslt',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\includes\\libxslt\\__init__.py',
+   'PYMODULE'),
+  ('lxml.isoschematron',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\isoschematron\\__init__.py',
+   'PYMODULE'),
+  ('lxml.pyclasslookup',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\pyclasslookup.py',
+   'PYMODULE'),
+  ('lxml.usedoctest',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\lxml\\usedoctest.py',
+   'PYMODULE'),
   ('lzma',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\lzma.py',
@@ -671,6 +1291,10 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\opcode.py',
    'PYMODULE'),
+  ('optparse',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\optparse.py',
+   'PYMODULE'),
   ('pathlib',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\pathlib\\__init__.py',
@@ -682,6 +1306,10 @@
   ('pathlib._local',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\pathlib\\_local.py',
+   'PYMODULE'),
+  ('pdb',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\pdb.py',
    'PYMODULE'),
   ('pickle',
    'C:\\Program '
@@ -707,6 +1335,22 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\py_compile.py',
    'PYMODULE'),
+  ('pydoc',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\pydoc.py',
+   'PYMODULE'),
+  ('pydoc_data',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\pydoc_data\\__init__.py',
+   'PYMODULE'),
+  ('pydoc_data.module_docs',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\pydoc_data\\module_docs.py',
+   'PYMODULE'),
+  ('pydoc_data.topics',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\pydoc_data\\topics.py',
+   'PYMODULE'),
   ('queue',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\queue.py',
@@ -718,6 +1362,406 @@
   ('random',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\random.py',
+   'PYMODULE'),
+  ('reportlab',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\__init__.py',
+   'PYMODULE'),
+  ('reportlab.graphics',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\__init__.py',
+   'PYMODULE'),
+  ('reportlab.graphics.charts',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\charts\\__init__.py',
+   'PYMODULE'),
+  ('reportlab.graphics.charts.areas',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\charts\\areas.py',
+   'PYMODULE'),
+  ('reportlab.graphics.charts.legends',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\charts\\legends.py',
+   'PYMODULE'),
+  ('reportlab.graphics.charts.piecharts',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\charts\\piecharts.py',
+   'PYMODULE'),
+  ('reportlab.graphics.charts.textlabels',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\charts\\textlabels.py',
+   'PYMODULE'),
+  ('reportlab.graphics.charts.utils',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\charts\\utils.py',
+   'PYMODULE'),
+  ('reportlab.graphics.charts.utils3d',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\charts\\utils3d.py',
+   'PYMODULE'),
+  ('reportlab.graphics.renderPDF',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\renderPDF.py',
+   'PYMODULE'),
+  ('reportlab.graphics.renderPM',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\renderPM.py',
+   'PYMODULE'),
+  ('reportlab.graphics.renderPS',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\renderPS.py',
+   'PYMODULE'),
+  ('reportlab.graphics.renderSVG',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\renderSVG.py',
+   'PYMODULE'),
+  ('reportlab.graphics.renderbase',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\renderbase.py',
+   'PYMODULE'),
+  ('reportlab.graphics.shapes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\shapes.py',
+   'PYMODULE'),
+  ('reportlab.graphics.testshapes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\testshapes.py',
+   'PYMODULE'),
+  ('reportlab.graphics.transform',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\transform.py',
+   'PYMODULE'),
+  ('reportlab.graphics.utils',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\utils.py',
+   'PYMODULE'),
+  ('reportlab.graphics.widgetbase',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\widgetbase.py',
+   'PYMODULE'),
+  ('reportlab.graphics.widgets',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\widgets\\__init__.py',
+   'PYMODULE'),
+  ('reportlab.graphics.widgets.flags',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\widgets\\flags.py',
+   'PYMODULE'),
+  ('reportlab.graphics.widgets.markers',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\widgets\\markers.py',
+   'PYMODULE'),
+  ('reportlab.graphics.widgets.signsandsymbols',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\graphics\\widgets\\signsandsymbols.py',
+   'PYMODULE'),
+  ('reportlab.lib',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\__init__.py',
+   'PYMODULE'),
+  ('reportlab.lib.PyFontify',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\PyFontify.py',
+   'PYMODULE'),
+  ('reportlab.lib.abag',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\abag.py',
+   'PYMODULE'),
+  ('reportlab.lib.arciv',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\arciv.py',
+   'PYMODULE'),
+  ('reportlab.lib.attrmap',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\attrmap.py',
+   'PYMODULE'),
+  ('reportlab.lib.boxstuff',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\boxstuff.py',
+   'PYMODULE'),
+  ('reportlab.lib.colors',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\colors.py',
+   'PYMODULE'),
+  ('reportlab.lib.corp',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\corp.py',
+   'PYMODULE'),
+  ('reportlab.lib.enums',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\enums.py',
+   'PYMODULE'),
+  ('reportlab.lib.fonts',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\fonts.py',
+   'PYMODULE'),
+  ('reportlab.lib.formatters',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\formatters.py',
+   'PYMODULE'),
+  ('reportlab.lib.geomutils',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\geomutils.py',
+   'PYMODULE'),
+  ('reportlab.lib.logger',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\logger.py',
+   'PYMODULE'),
+  ('reportlab.lib.normalDate',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\normalDate.py',
+   'PYMODULE'),
+  ('reportlab.lib.pagesizes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\pagesizes.py',
+   'PYMODULE'),
+  ('reportlab.lib.pdfencrypt',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\pdfencrypt.py',
+   'PYMODULE'),
+  ('reportlab.lib.randomtext',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\randomtext.py',
+   'PYMODULE'),
+  ('reportlab.lib.rl_accel',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\rl_accel.py',
+   'PYMODULE'),
+  ('reportlab.lib.rl_safe_eval',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\rl_safe_eval.py',
+   'PYMODULE'),
+  ('reportlab.lib.rltempfile',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\rltempfile.py',
+   'PYMODULE'),
+  ('reportlab.lib.rparsexml',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\rparsexml.py',
+   'PYMODULE'),
+  ('reportlab.lib.sequencer',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\sequencer.py',
+   'PYMODULE'),
+  ('reportlab.lib.styles',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\styles.py',
+   'PYMODULE'),
+  ('reportlab.lib.textsplit',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\textsplit.py',
+   'PYMODULE'),
+  ('reportlab.lib.units',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\units.py',
+   'PYMODULE'),
+  ('reportlab.lib.utils',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\utils.py',
+   'PYMODULE'),
+  ('reportlab.lib.validators',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\lib\\validators.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\__init__.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_enc_macexpert',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_enc_macexpert.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_enc_macroman',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_enc_macroman.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_enc_pdfdoc',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_enc_pdfdoc.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_enc_standard',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_enc_standard.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_enc_symbol',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_enc_symbol.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_enc_winansi',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_enc_winansi.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_enc_zapfdingbats',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_enc_zapfdingbats.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_courier',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_courier.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_courierbold',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_courierbold.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_courierboldoblique',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_courierboldoblique.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_courieroblique',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_courieroblique.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_helvetica',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_helvetica.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_helveticabold',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_helveticabold.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_helveticaboldoblique',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_helveticaboldoblique.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_helveticaoblique',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_helveticaoblique.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_symbol',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_symbol.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_timesbold',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_timesbold.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_timesbolditalic',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_timesbolditalic.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_timesitalic',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_timesitalic.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_timesroman',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_timesroman.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._fontdata_widths_zapfdingbats',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_fontdata_widths_zapfdingbats.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase._glyphlist',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\_glyphlist.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase.acroform',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\acroform.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase.pdfdoc',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\pdfdoc.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase.pdfmetrics',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\pdfmetrics.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase.pdfutils',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\pdfutils.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase.rl_codecs',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\rl_codecs.py',
+   'PYMODULE'),
+  ('reportlab.pdfbase.ttfonts',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfbase\\ttfonts.py',
+   'PYMODULE'),
+  ('reportlab.pdfgen',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfgen\\__init__.py',
+   'PYMODULE'),
+  ('reportlab.pdfgen.canvas',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfgen\\canvas.py',
+   'PYMODULE'),
+  ('reportlab.pdfgen.pathobject',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfgen\\pathobject.py',
+   'PYMODULE'),
+  ('reportlab.pdfgen.pdfgeom',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfgen\\pdfgeom.py',
+   'PYMODULE'),
+  ('reportlab.pdfgen.pdfimages',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfgen\\pdfimages.py',
+   'PYMODULE'),
+  ('reportlab.pdfgen.textobject',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\pdfgen\\textobject.py',
+   'PYMODULE'),
+  ('reportlab.platypus',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\platypus\\__init__.py',
+   'PYMODULE'),
+  ('reportlab.platypus.doctemplate',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\platypus\\doctemplate.py',
+   'PYMODULE'),
+  ('reportlab.platypus.flowables',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\platypus\\flowables.py',
+   'PYMODULE'),
+  ('reportlab.platypus.frames',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\platypus\\frames.py',
+   'PYMODULE'),
+  ('reportlab.platypus.multicol',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\platypus\\multicol.py',
+   'PYMODULE'),
+  ('reportlab.platypus.paragraph',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\platypus\\paragraph.py',
+   'PYMODULE'),
+  ('reportlab.platypus.paraparser',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\platypus\\paraparser.py',
+   'PYMODULE'),
+  ('reportlab.platypus.tables',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\platypus\\tables.py',
+   'PYMODULE'),
+  ('reportlab.platypus.xpreformatted',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\platypus\\xpreformatted.py',
+   'PYMODULE'),
+  ('reportlab.rl_config',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\rl_config.py',
+   'PYMODULE'),
+  ('reportlab.rl_settings',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\reportlab\\rl_settings.py',
+   'PYMODULE'),
+  ('rlPyCairo',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\rlPyCairo\\__init__.py',
+   'PYMODULE'),
+  ('rlPyCairo.gstate',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\rlPyCairo\\gstate.py',
+   'PYMODULE'),
+  ('rlPyCairo.pil2pict',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\rlPyCairo\\pil2pict.py',
    'PYMODULE'),
   ('rlcompleter',
    'C:\\Program '
@@ -1482,6 +2526,10 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\selectors.py',
    'PYMODULE'),
+  ('shlex',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\shlex.py',
+   'PYMODULE'),
   ('shutil',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\shutil.py',
@@ -1493,6 +2541,10 @@
   ('socket',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\socket.py',
+   'PYMODULE'),
+  ('socketserver',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\socketserver.py',
    'PYMODULE'),
   ('ssl',
    'C:\\Program '
@@ -1514,6 +2566,22 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\subprocess.py',
    'PYMODULE'),
+  ('svglib',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\svglib\\__init__.py',
+   'PYMODULE'),
+  ('svglib.fonts',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\svglib\\fonts.py',
+   'PYMODULE'),
+  ('svglib.svglib',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\svglib\\svglib.py',
+   'PYMODULE'),
+  ('svglib.utils',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\svglib\\utils.py',
+   'PYMODULE'),
   ('sysconfig',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\sysconfig\\__init__.py',
@@ -1533,6 +2601,34 @@
   ('threading',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\threading.py',
+   'PYMODULE'),
+  ('tinycss2',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\tinycss2\\__init__.py',
+   'PYMODULE'),
+  ('tinycss2.ast',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\tinycss2\\ast.py',
+   'PYMODULE'),
+  ('tinycss2.bytes',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\tinycss2\\bytes.py',
+   'PYMODULE'),
+  ('tinycss2.nth',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\tinycss2\\nth.py',
+   'PYMODULE'),
+  ('tinycss2.parser',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\tinycss2\\parser.py',
+   'PYMODULE'),
+  ('tinycss2.serializer',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\tinycss2\\serializer.py',
+   'PYMODULE'),
+  ('tinycss2.tokenizer',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\tinycss2\\tokenizer.py',
    'PYMODULE'),
   ('tkinter',
    'C:\\Program '
@@ -1573,6 +2669,10 @@
   ('tracemalloc',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\tracemalloc.py',
+   'PYMODULE'),
+  ('tty',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\tty.py',
    'PYMODULE'),
   ('typing',
    'C:\\Program '
@@ -1650,9 +2750,80 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\uuid.py',
    'PYMODULE'),
+  ('version',
+   'C:\\Users\\MJ\\OneDrive - Balluff GmbH\\GIT\\balluff-scanner\\version.py',
+   'PYMODULE'),
+  ('webbrowser',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\webbrowser.py',
+   'PYMODULE'),
+  ('webencodings',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\webencodings\\__init__.py',
+   'PYMODULE'),
+  ('webencodings.labels',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\webencodings\\labels.py',
+   'PYMODULE'),
+  ('webencodings.x_user_defined',
+   'C:\\Users\\MJ\\OneDrive - Balluff '
+   'GmbH\\GIT\\balluff-scanner\\venv\\Lib\\site-packages\\webencodings\\x_user_defined.py',
+   'PYMODULE'),
   ('xml',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\__init__.py',
+   'PYMODULE'),
+  ('xml.dom',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\dom\\__init__.py',
+   'PYMODULE'),
+  ('xml.dom.NodeFilter',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\dom\\NodeFilter.py',
+   'PYMODULE'),
+  ('xml.dom.domreg',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\dom\\domreg.py',
+   'PYMODULE'),
+  ('xml.dom.expatbuilder',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\dom\\expatbuilder.py',
+   'PYMODULE'),
+  ('xml.dom.minicompat',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\dom\\minicompat.py',
+   'PYMODULE'),
+  ('xml.dom.minidom',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\dom\\minidom.py',
+   'PYMODULE'),
+  ('xml.dom.pulldom',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\dom\\pulldom.py',
+   'PYMODULE'),
+  ('xml.dom.xmlbuilder',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\dom\\xmlbuilder.py',
+   'PYMODULE'),
+  ('xml.etree',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\etree\\__init__.py',
+   'PYMODULE'),
+  ('xml.etree.ElementInclude',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\etree\\ElementInclude.py',
+   'PYMODULE'),
+  ('xml.etree.ElementPath',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\etree\\ElementPath.py',
+   'PYMODULE'),
+  ('xml.etree.ElementTree',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\etree\\ElementTree.py',
+   'PYMODULE'),
+  ('xml.etree.cElementTree',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\\Lib\\xml\\etree\\cElementTree.py',
    'PYMODULE'),
   ('xml.parsers',
    'C:\\Program '

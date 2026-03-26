@@ -1,4 +1,6 @@
 # gui.py
+import sys
+import os
 import tkinter as tk
 from tkinter import ttk, scrolledtext
 import threading
@@ -13,9 +15,16 @@ from profinet_scanner import start_dcp_scan_all, start_dcp_scan
 
 REPO_URL = "https://github.com/marjac6/balluff-scanner"
 
+
+def _resource_path(filename):
+    """Resolve path to bundled resource — works for both script and frozen EXE."""
+    base = sys._MEIPASS if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(sys.argv[0]))
+    return os.path.join(base, filename)
+
+
 def _load_changelog():
     try:
-        with open("CHANGELOG.md", encoding="utf-8") as f:
+        with open(_resource_path("CHANGELOG.md"), encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
         return "(CHANGELOG.md not found)"
@@ -34,16 +43,18 @@ class App:
         self.scanning      = False
         self.found_devices = []
 
-        # Load GitHub logo from SVG
+        # Load GitHub logo from SVG; fall back to None if file missing or broken
         def svg_to_tkimg(svg_path, size=(16, 16)):
             drawing = svg2rlg(svg_path)
+            if drawing is None:
+                return None
             buf = BytesIO()
             renderPM.drawToFile(drawing, buf, fmt="PNG")
             buf.seek(0)
             img = Image.open(buf).resize(size, Image.Resampling.LANCZOS)
             return ImageTk.PhotoImage(img)
 
-        self.github_logo = svg_to_tkimg("github.svg")
+        self.github_logo = svg_to_tkimg(_resource_path("github.svg"))
 
         self._build_ui()
         self._load_adapters()
@@ -128,7 +139,8 @@ class App:
         repo_frame = tk.Frame(bottom, bg="#f0f0f0")
         repo_frame.pack(side="right", padx=8)
 
-        tk.Label(repo_frame, image=self.github_logo, bg="#f0f0f0").pack(side="left")
+        if self.github_logo:
+            tk.Label(repo_frame, image=self.github_logo, bg="#f0f0f0").pack(side="left")
 
         lnk = tk.Label(
             repo_frame, text="github: balluff-scanner",
