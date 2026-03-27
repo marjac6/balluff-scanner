@@ -70,11 +70,26 @@ python main.py
 pyinstaller ProtocolHarbor.spec
 ```
 
-Output: `dist\ProtocolHarbor-v<version>.exe`
+Output: `dist\ProtocolHarbor.exe`
 
-The spec file reads the version from `version.py` at build time — the EXE filename is versioned automatically.
+The spec file reads the version from `version.py` at build time, writes it into the Windows EXE metadata, and embeds an application manifest.
 
 > **Note:** `icon.ico` and `github.svg` must be present in the project root before building.
+
+Release and SmartScreen publication guidance is documented in `RELEASE_CHECKLIST.md`.
+
+### Packaging a Release ZIP
+
+```powershell
+.\scripts\package-release.ps1
+```
+
+Output:
+
+- `release\ProtocolHarbor-<version>-win64.zip`
+- `release\ProtocolHarbor-<version>-win64.sha256.txt`
+
+The ZIP contains `ProtocolHarbor.exe`, `README.md`, `LICENSE`, and `CHANGELOG.md` inside a versioned folder.
 
 ---
 
