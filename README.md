@@ -62,23 +62,6 @@ pip install -r requirements.txt
 python main.py
 ```
 
-### Advanced debug mode (for tests before commit)
-
-Enable detailed logs only for local test runs:
-
-```powershell
-$env:SCANNER_DEBUG="1"
-$env:SCANNER_DEBUG_FILE=".logs\\debug.log"   # optional
-python main.py
-```
-
-Disable again:
-
-```powershell
-Remove-Item Env:SCANNER_DEBUG -ErrorAction SilentlyContinue
-Remove-Item Env:SCANNER_DEBUG_FILE -ErrorAction SilentlyContinue
-```
-
 ---
 
 ## Building the EXE
