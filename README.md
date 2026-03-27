@@ -1,13 +1,13 @@
 # Balluff Device Scanner
 
-![Version](https://img.shields.io/badge/version-0.2.0-blue)
+![Version](https://img.shields.io/badge/version-0.3.0-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green)
 
 A network scanning tool for detecting **Balluff** and **BNI** devices without prior knowledge of the subnet. Designed for Balluff engineers and external system integrators working with Balluff hardware.
 
-> **Current version:** `v0.2.0` — ARP passive/active scan + Profinet DCP discovery
+> **Current version:** `v0.3.0` — ARP passive/active scan + Profinet DCP discovery
 
 ---
 
@@ -69,7 +69,7 @@ python main.py
 pyinstaller BalluffScanner.spec
 ```
 
-Output: `dist\BalluffScanner-v0.2.0.exe`
+Output: `dist\BalluffScanner-v0.3.0.exe`
 
 The spec file reads the version from `version.py` at build time — the EXE filename is versioned automatically.
 
@@ -97,14 +97,14 @@ balluff-scanner/
 
 ## Protocol Roadmap
 
-The goal is to support all major protocols used by Balluff network devices. Version `1.0.0` will be released when all planned protocols are implemented.
+The goal is to support all major protocols used by Balluff network devices. Version `1.0.0` will be released when all planned protocols and features are implemented.
 
 | Protocol | Status |
 |---|---|
-| EtherNet/IP (ARP passive + active) | ✅ v0.2.0 |
-| Profinet DCP | ✅ v0.2.0 |
-| Modbus TCP | 🔜 planned |
-| EtherCAT | 🔜 planned |
+| EtherNet/IP (ARP) | ✅ v0.3.0 |
+| Modbus TCP (ARP) | ✅ v0.3.0 |
+| EtherCAT | ✅ v0.3.0 |
+| Profinet DCP | ✅ v0.3.0 |
 
 ---
 
