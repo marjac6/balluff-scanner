@@ -36,7 +36,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name=f'IndustrialDeviceScanner-v{VERSION}',
+    name=f'ProtocolHarbor-v{VERSION}',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

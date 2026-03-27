@@ -21,7 +21,7 @@ from modbus_scanner import probe_modbus_device
 from vendor_registry import lookup_vendor_name
 from debug_utils import get_logger
 
-REPO_URL = "https://github.com/<org>/<repo>"
+REPO_URL = "https://github.com/<twoj-login>/ProtocolHarbor"
 ADAPTER_REFRESH_IDLE_MS = 5000
 ADAPTER_REFRESH_SCANNING_MS = 15000
 PROBE_COOLDOWN_SECONDS = 15
@@ -46,7 +46,7 @@ CHANGELOG = _load_changelog()
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title(f"Industrial Device Scanner  v{__version__}")
+        self.root.title(f"ProtocolHarbor  v{__version__}")
         self.root.geometry("1020x640")
         self.root.resizable(True, True)
         self.root.minsize(720, 480)
@@ -181,7 +181,7 @@ class App:
         repo_frame.pack(side="right", padx=8)
         if self.github_logo:
             tk.Label(repo_frame, image=self.github_logo, bg="#f0f0f0").pack(side="left")
-        lnk = tk.Label(repo_frame, text="github: industrial-device-scanner",
+        lnk = tk.Label(repo_frame, text="github: ProtocolHarbor",
                         font=("Segoe UI", 7, "underline"), fg="#0969da",
                         bg="#f0f0f0", cursor="hand2")
         lnk.pack(side="left", padx=2)

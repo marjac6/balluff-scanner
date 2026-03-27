@@ -1,4 +1,4 @@
-# Industrial Device Scanner
+# ProtocolHarbor
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -44,8 +44,8 @@ A network scanning tool for detecting industrial field devices without prior kno
 
 ```powershell
 # 1. Clone the repository
-git clone <your-repo-url>
-cd <your-repo-folder>
+git clone https://github.com/<twoj-login>/ProtocolHarbor.git
+cd ProtocolHarbor
 
 # 2. Create and activate virtual environment
 python -m venv venv
@@ -99,10 +99,10 @@ Remove-Item Env:SCANNER_DEBUG_FILE -ErrorAction SilentlyContinue
 ## Building the EXE
 
 ```powershell
-pyinstaller IndustrialDeviceScanner.spec
+pyinstaller ProtocolHarbor.spec
 ```
 
-Output: `dist\IndustrialDeviceScanner-v<version>.exe`
+Output: `dist\ProtocolHarbor-v<version>.exe`
 
 The spec file reads the version from `version.py` at build time — the EXE filename is versioned automatically.
 
@@ -121,7 +121,7 @@ scanner/
 ├── profinet_scanner.py   # Profinet DCP scan
 ├── version.py            # Single source of truth for version
 ├── CHANGELOG.md          # Release history
-├── IndustrialDeviceScanner.spec   # PyInstaller build config
+├── ProtocolHarbor.spec   # PyInstaller build config
 ├── requirements.txt      # Python dependencies
 ├── icon.ico              # App icon
 └── github.svg            # GitHub logo for UI
