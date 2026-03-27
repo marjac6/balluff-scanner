@@ -1,25 +1,17 @@
 """Centralna lista producentow dla filtrowania i prezentacji w GUI."""
 
 VENDOR_OUI = {
-    "00:19:31": "Balluff",
     # Dodaj kolejne OUI w formacie "xx:xx:xx": "Nazwa producenta"
 }
 
 # Fallback: szukanie slow kluczowych po surowych bajtach pakietu ARP.
-VENDOR_KEYWORDS = ["balluff", "bni"]
+VENDOR_KEYWORDS = []
 
 PROTOCOL_VENDOR_IDS = {
-    "ethercat": {
-        "0x010000E8": "Balluff GmbH",
-    },
-    "profinet": {
-        "0x0378": "Balluff GmbH",
-        "0x00000378": "Balluff GmbH",
-        "0x00A9": "Balluff GmbH",
-        "0x000000A9": "Balluff GmbH",
-    },
+    "ethercat": {},
+    "profinet": {},
     "ethernet/ip": {
-        # Uzupełniane lokalnie na podstawie ODVA VID.
+        # Uzupełniane lokalnie np. na podstawie ODVA VID.
     },
 }
 
