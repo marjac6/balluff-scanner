@@ -63,10 +63,12 @@ def _decode(v) -> str:
         return v.decode("utf-8", errors="replace").strip("\x00").strip()
     return str(v).strip()
 
+SDO_TIMEOUT_US = 300_000  # 300 ms per SDO read — prevents blocking on unresponsive slaves
+
 def _sdo_string(slave, index: int, subindex: int = 0) -> str:
-    """Bezpieczny odczyt SDO string."""
+    """Bezpieczny odczyt SDO string z limitem czasu."""
     try:
-        data = slave.sdo_read(index, subindex)
+        data = slave.sdo_read(index, subindex, timeout=SDO_TIMEOUT_US)
         return _decode(data)
     except Exception:
         return ""
@@ -99,12 +101,13 @@ def _active_scan(adapter_name: str, callback, stop_event):
             return
 
         # 2. Przejście do PRE-OP
-        # ZAMIENIONO TIMEOUT 2 SEKUND NA 200 MS (200,000 mikrosekund)
-        # To drastycznie przyspiesza reakcję na STOP
+        # Timeout skalowany liniowo: 300 ms * liczba slave'ów (minimum 300 ms)
+        preop_timeout_us = 300_000 * max(1, slave_count)
         for slave in master.slaves:
             slave.state = pysoem.PREOP_STATE
         master.write_state()
-        master.state_check(pysoem.PREOP_STATE, 200_000) 
+        master.state_check(pysoem.PREOP_STATE, preop_timeout_us)
+        log.debug(f"state_check PRE-OP timeout={preop_timeout_us//1000} ms dla {slave_count} slave(s)")
         
         if stop_event.is_set(): 
             master.close()
@@ -139,6 +142,7 @@ def _active_scan(adapter_name: str, callback, stop_event):
                 "product_name": device_name or sii_name,
                 "sw_version":   sw_version or f"Rev: {rev:#x}",
                 "slave_count":  slave_count,
+                "slave_index":  i,
                 "name":         display_name,
                 "protocol":     "EtherCAT",
                 "adapter":      adapter_name,

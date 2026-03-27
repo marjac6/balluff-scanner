@@ -278,11 +278,15 @@ class App:
         vendor_id    = info.get("vendor_id",    "")
         product_code = info.get("product_code", "")
 
-        key = (info.get("adapter", ""), vendor_id, product_name)
+        # Klucz deduplikacji uwzględnia pozycję slave'a w łańcuchu EtherCAT.
+        # Dwa identyczne moduły mają ten sam vendor_id i product_name, ale różny slave_index.
+        slave_index = info.get("slave_index", -1)
+        key = (info.get("adapter", ""), vendor_id, product_name, slave_index)
         for d in self.found_devices:
             if d.get("protocol") != "EtherCAT":
                 continue
-            if (d.get("adapter",""), d.get("vendor_id",""), d.get("product_name","")) == key:
+            dk = (d.get("adapter",""), d.get("vendor_id",""), d.get("product_name",""), d.get("slave_index",-1))
+            if dk == key:
                 return
 
         self.found_devices.append(info)
