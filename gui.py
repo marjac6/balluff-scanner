@@ -18,7 +18,7 @@ from lldp_scanner import start_lldp_scan_all, start_lldp_scan
 from ethercat_scanner import start_ecat_scan_all, start_ecat_scan
 from ethernetip_scanner import probe_enip_device
 from modbus_scanner import probe_modbus_device
-from vendor_registry import lookup_vendor_name
+from vendor_registry import lookup_vendor_name, lookup_vendor_from_mac
 from debug_utils import get_logger
 
 REPO_URL = "https://github.com/marjac6/ProtocolHarbor"
@@ -213,15 +213,31 @@ class App:
     def _producer_for_info(self, info):
         protocol = info.get("protocol") or info.get("type", "ARP")
         vendor_id = info.get("vendor_id", "")
+        mac = info.get("mac", "")
+
+        def _mac_fallback():
+            """Resolve producer from MAC OUI when nothing else is known."""
+            return lookup_vendor_from_mac(mac) if mac else ""
+
+        def _clean(value: str) -> str:
+            """Return value unless it looks like a raw OUI prefix (e.g. '00:19:31')."""
+            from vendor_registry import _looks_like_oui
+            return "" if _looks_like_oui(value) else value
+
         if protocol == "EtherCAT":
-            return info.get("vendor_name", "") or lookup_vendor_name(vendor_id, protocol="ethercat")
+            return _clean(info.get("vendor_name", "")) or lookup_vendor_name(vendor_id, protocol="ethercat") or _mac_fallback()
         if protocol == "Profinet DCP":
-            return info.get("vendor_name", "") or lookup_vendor_name(vendor_id, protocol="profinet")
+            return _clean(info.get("vendor_name", "")) or lookup_vendor_name(vendor_id, protocol="profinet") or _mac_fallback()
         if protocol == "EtherNet/IP":
-            return info.get("producer", "") or info.get("vendor_name", "") or lookup_vendor_name(vendor_id, protocol="ethernet/ip")
+            return (_clean(info.get("producer", ""))
+                    or _clean(info.get("vendor_name", ""))
+                    or lookup_vendor_name(vendor_id, protocol="ethernet/ip")
+                    or _mac_fallback())
         if protocol == "Modbus TCP":
-            return info.get("producer", "") or info.get("vendor_name", "")
-        return info.get("vendor_name", "") or info.get("keyword", "")
+            return (_clean(info.get("producer", ""))
+                    or _clean(info.get("vendor_name", ""))
+                    or _mac_fallback())
+        return _clean(info.get("vendor_name", "")) or _clean(info.get("keyword", "")) or _mac_fallback()
 
     def _refresh_vendor_filter_options(self):
         current = self.vendor_filter_var.get() or self._all_vendors_label
