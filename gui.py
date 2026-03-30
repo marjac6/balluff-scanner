@@ -7,6 +7,8 @@ import threading
 import webbrowser
 import string
 import time
+import ipaddress
+import subprocess
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 from PIL import Image, ImageTk
@@ -64,6 +66,7 @@ class App:
         self._arp_ip_mac: dict = {}
         self._arp_conflict_logged: set = set()
         self.vendor_filter_var = tk.StringVar(value=self._all_vendors_label)
+        self._ipconfig_cache = {}  # Cache ipconfig results {adapter_mac → {ip → netmask}}
 
         def svg_to_tkimg(svg_path, size=(16, 16)):
             drawing = svg2rlg(svg_path)
@@ -164,7 +167,10 @@ class App:
         self.tree.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
 
-        self.tree.tag_configure("ip_conflict", background="#fff3cd", foreground="#7c5c00")
+        # Row background colors for subnet/conflict detection
+        self.tree.tag_configure("duplicate_ip", background="#ffcdd2", foreground="#c62828")      # Red: duplicate IP
+        self.tree.tag_configure("same_subnet",  background="#c8e6c9", foreground="#2e7d32")      # Light green: same subnet
+        self.tree.tag_configure("diff_subnet",  background="#fff9c4", foreground="#f57f17")      # Light yellow: different subnet
 
         # -- log --
         log_frame = tk.LabelFrame(self.root, text="Log", padx=8, pady=4)
@@ -347,11 +353,8 @@ class App:
             self.tree.delete(row)
         for info in self.found_devices:
             if self._is_visible(info):
-                conflict = self._is_ip_conflict(
-                    info.get("adapter", "?"),
-                    info.get("ip", ""),
-                )
-                tags = ("ip_conflict",) if conflict else ()
+                tag = self._get_row_tag(info)
+                tags = (tag,) if tag else ()
                 self.tree.insert("", "end", values=self._device_to_row(info), tags=tags)
 
     def _hex_to_text_details(self, hex_value):
@@ -552,6 +555,131 @@ class App:
     )
 
     # ── ARP conflict detection (RFC 5227 / Wireshark style) ──────────────────
+
+    def _get_adapter_netmask_from_ipconfig(self, adapter_mac: str) -> dict:
+        """Parse ipconfig /all and find netmask for the interface with matching MAC.
+        
+        Returns dict: {ip_address → netmask} or empty dict if not found.
+        Caches results to avoid repeated ipconfig calls.
+        """
+        # Check cache first
+        if adapter_mac in self._ipconfig_cache:
+            return self._ipconfig_cache[adapter_mac]
+        
+        result = {}
+        try:
+            output = subprocess.check_output(["ipconfig", "/all"], text=True, encoding="cp1252", timeout=5)
+        except Exception as e:
+            LOGGER.debug(f"ipconfig call failed: {e}")
+            self._ipconfig_cache[adapter_mac] = {}
+            return {}
+        
+        if not output:
+            self._ipconfig_cache[adapter_mac] = {}
+            return {}
+        
+        current_ip = None
+        current_mac = None
+        
+        # Parse output line by line
+        try:
+            for line in output.split("\n"):
+                line = line.strip()
+                
+                # Watch for MAC address
+                if "Physical Address" in line or "MAC Address" in line:
+                    parts = line.split(":")
+                    if len(parts) >= 2:
+                        mac_str = parts[1].strip().lower()
+                        # Normalize MAC format (e.g., "ac-b4-80-ca-ba-6d" → "ac:b4:80:ca:ba:6d")
+                        mac_str = mac_str.replace("-", ":")
+                        current_mac = mac_str
+                        current_ip = None
+                
+                # Watch for IPv4 Address
+                elif "IPv4 Address" in line and current_mac and current_mac == adapter_mac:
+                    parts = line.split(":")
+                    if len(parts) >= 2:
+                        ip_str = parts[1].strip()
+                        # Remove any parentheses
+                        ip_str = ip_str.replace("(Preferred)", "").strip()
+                        current_ip = ip_str
+                
+                # Watch for Subnet Mask
+                elif "Subnet Mask" in line and current_mac and current_mac == adapter_mac and current_ip:
+                    parts = line.split(":")
+                    if len(parts) >= 2:
+                        mask_str = parts[1].strip()
+                        result[current_ip] = mask_str
+                        current_ip = None
+        except Exception as e:
+            LOGGER.debug(f"ipconfig parsing failed: {e}")
+        
+        # Cache the result
+        self._ipconfig_cache[adapter_mac] = result
+        return result
+
+    def _is_ip_in_adapter_subnet(self, adapter_name: str, device_ip: str) -> bool:
+        """Check if device_ip is in the same subnet as any IP assigned to adapter_name."""
+        if not device_ip or device_ip in ("0.0.0.0", "255.255.255.255"):
+            return False
+        
+        try:
+            dev_addr = ipaddress.ip_address(device_ip)
+        except ValueError:
+            return False
+        
+        # Find adapter by name in self.adapters to get its MAC
+        adapter_mac = None
+        for adapter in self.adapters:
+            if adapter.get("name") == adapter_name or adapter.get("name", "").endswith(adapter_name):
+                mac_str = (adapter.get("mac") or "").lower()
+                # Normalize MAC format
+                adapter_mac = mac_str.replace("-", ":")
+                break
+        
+        if not adapter_mac:
+            return False
+        
+        # Get netmask info from ipconfig
+        ip_to_mask = self._get_adapter_netmask_from_ipconfig(adapter_mac)
+        
+        # Check if device_ip is in any of the subnets
+        for ip_str, mask_str in ip_to_mask.items():
+            try:
+                network = ipaddress.ip_network(f"{ip_str}/{mask_str}", strict=False)
+                if dev_addr in network:
+                    return True
+            except (ValueError, ipaddress.AddressValueError):
+                continue
+        
+        return False
+
+    def _get_row_tag(self, info: dict) -> str:
+        """Determine the row tag based on conflict/subnet status.
+        
+        Returns:
+        - "duplicate_ip"  : IP conflict (multiple MACs for same IP)
+        - "same_subnet"   : No conflict, but in same subnet as adapter
+        - "diff_subnet"   : No conflict, different subnet or no adapter IPs
+        - None            : No special status
+        """
+        adapter = info.get("adapter", "?")
+        ip = info.get("ip", "")
+        
+        # Check for duplicate IP conflict first
+        if self._is_ip_conflict(adapter, ip):
+            return "duplicate_ip"
+        
+        # Check if in same subnet
+        if ip and ip != "0.0.0.0":
+            if self._is_ip_in_adapter_subnet(adapter, ip):
+                return "same_subnet"
+            else:
+                # Different subnet (or adapter has no IPs)
+                return "diff_subnet"
+        
+        return None
 
     def _record_arp(self, adapter: str, ip: str, mac: str) -> bool:
         """Record one ARP observation (adapter, ip) → mac.
