@@ -58,6 +58,11 @@ class App:
         self._all_vendors_label = "Wszyscy producenci"
         self._probe_lock = threading.Lock()
         self._scheduled_protocol_probes = {}
+        # ARP conflict evidence (RFC 5227 / Wireshark style):
+        # key = (adapter, ip)  →  set of MACs seen as ARP sender for that IP.
+        # A conflict exists when the set has more than one distinct MAC.
+        self._arp_ip_mac: dict = {}
+        self._arp_conflict_logged: set = set()
         self.vendor_filter_var = tk.StringVar(value=self._all_vendors_label)
 
         def svg_to_tkimg(svg_path, size=(16, 16)):
@@ -129,33 +134,37 @@ class App:
         self.vendor_filter_cb.bind("<<ComboboxSelected>>", self._on_vendor_filter_change)
         self._refresh_vendor_filter_options()
 
-        cols = ("ip", "mac", "producer", "module_name", "protocol", "vendor_id", "device_id", "version", "adapter")
+        cols = ("ip", "mac", "producer", "module_name", "device_desc", "protocol", "vendor_id", "device_id", "version", "adapter")
         self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", height=8)
 
-        self.tree.heading("ip",        text="Adres IP")
-        self.tree.heading("mac",       text="Adres MAC")
-        self.tree.heading("producer",  text="Producent")
+        self.tree.heading("ip",          text="Adres IP")
+        self.tree.heading("mac",         text="Adres MAC")
+        self.tree.heading("producer",    text="Producent")
         self.tree.heading("module_name", text="Nazwa modułu")
-        self.tree.heading("protocol",  text="Protokół")
-        self.tree.heading("vendor_id", text="ID producenta")
-        self.tree.heading("device_id", text="ID urządzenia")
-        self.tree.heading("version",   text="Wersja")
-        self.tree.heading("adapter",   text="Adapter")
+        self.tree.heading("device_desc", text="Opis urządzenia")
+        self.tree.heading("protocol",    text="Protokół")
+        self.tree.heading("vendor_id",   text="ID producenta")
+        self.tree.heading("device_id",   text="ID urządzenia")
+        self.tree.heading("version",     text="Wersja")
+        self.tree.heading("adapter",     text="Adapter")
 
-        self.tree.column("ip",        width=110)
-        self.tree.column("mac",       width=140)
-        self.tree.column("producer",  width=140)
-        self.tree.column("module_name", width=180)
-        self.tree.column("protocol",  width=105)
-        self.tree.column("vendor_id", width=100)
-        self.tree.column("device_id", width=120)
-        self.tree.column("version",   width=85)
-        self.tree.column("adapter",   width=155)
+        self.tree.column("ip",          width=110)
+        self.tree.column("mac",         width=140)
+        self.tree.column("producer",    width=140)
+        self.tree.column("module_name", width=160)
+        self.tree.column("device_desc", width=160)
+        self.tree.column("protocol",    width=105)
+        self.tree.column("vendor_id",   width=100)
+        self.tree.column("device_id",   width=120)
+        self.tree.column("version",     width=85)
+        self.tree.column("adapter",     width=155)
 
         scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scroll.set)
         self.tree.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
+
+        self.tree.tag_configure("ip_conflict", background="#fff3cd", foreground="#7c5c00")
 
         # -- log --
         log_frame = tk.LabelFrame(self.root, text="Log", padx=8, pady=4)
@@ -232,6 +241,10 @@ class App:
             module_name = info.get("product_name", "") or info.get("name", "")
             device_id   = info.get("product_code", "")
             version     = info.get("sw_version", "")
+            # Pokaż dodatkową nazwę (tę, która nie trafiła do product_name)
+            sii = info.get("sii_name", "")
+            sdo = info.get("device_name_sdo", "")
+            device_desc = sdo if sdo and sdo != module_name else (sii if sii and sii != module_name else "")
         elif protocol == "EtherNet/IP":
             module_name = (
                 info.get("product_name")
@@ -243,6 +256,7 @@ class App:
             )
             device_id = info.get("device_id", "")
             version = info.get("version", "") or info.get("firmware", "")
+            device_desc = ""
         elif protocol == "Modbus TCP":
             module_name = (
                 info.get("product_name")
@@ -254,10 +268,12 @@ class App:
             )
             device_id = info.get("device_id", "")
             version = info.get("version", "") or info.get("firmware", "")
+            # model_name (obj 0x05) jako uzupełnienie product_name (obj 0x04)
+            model = info.get("model_name", "")
+            device_desc = model if model and model != module_name else ""
         elif protocol == "Profinet DCP":
             module_name = (
                 info.get("name_of_station")
-                or info.get("type_of_station")
                 or info.get("product_name")
                 or info.get("module_name")
                 or info.get("model_name")
@@ -267,6 +283,12 @@ class App:
             )
             device_id = info.get("device_id", "")
             version = info.get("firmware", "") or info.get("version", "")
+            # type_of_station = DeviceVendorValue (opis/typ urządzenia od producenta)
+            device_desc = (
+                info.get("type_of_station", "")
+                or info.get("lldp_system_description", "")
+                or ""
+            )
         else:
             module_name = (
                 info.get("product_name")
@@ -283,12 +305,14 @@ class App:
                 or info.get("version")
                 or ""
             )
+            device_desc = info.get("lldp_system_description", "")
 
         return (
             info.get("ip", ""),
             info.get("mac", ""),
             producer,
             module_name,
+            device_desc,
             protocol,
             info.get("vendor_id", ""),
             device_id,
@@ -307,7 +331,12 @@ class App:
             self.tree.delete(row)
         for info in self.found_devices:
             if self._is_visible(info):
-                self.tree.insert("", "end", values=self._device_to_row(info))
+                conflict = self._is_ip_conflict(
+                    info.get("adapter", "?"),
+                    info.get("ip", ""),
+                )
+                tags = ("ip_conflict",) if conflict else ()
+                self.tree.insert("", "end", values=self._device_to_row(info), tags=tags)
 
     def _hex_to_text_details(self, hex_value):
         text = str(hex_value or "").strip()
@@ -455,9 +484,10 @@ class App:
         changed |= self._fill_field(dev, "version",         info.get("firmware"))
         # Keep LLDP identity fields separate from Profinet DCP identity
         # to avoid replacing correct DCP module naming.
-        changed |= self._fill_field(dev, "lldp_model",       info.get("model"))
-        changed |= self._fill_field(dev, "lldp_system_name", info.get("system_name"))
-        changed |= self._fill_field(dev, "product_name",     info.get("model"))
+        changed |= self._fill_field(dev, "lldp_model",              info.get("model"))
+        changed |= self._fill_field(dev, "lldp_system_name",        info.get("system_name"))
+        changed |= self._fill_field(dev, "lldp_system_description", info.get("system_description"))
+        changed |= self._fill_field(dev, "product_name",            info.get("model"))
 
         if changed:
             self._refresh_vendor_filter_options()
@@ -500,9 +530,33 @@ class App:
         "model_name",
         "name_of_station",
         "type_of_station",
+        "lldp_system_description",
         "device_role",
         "device_instance",
     )
+
+    # ── ARP conflict detection (RFC 5227 / Wireshark style) ──────────────────
+
+    def _record_arp(self, adapter: str, ip: str, mac: str) -> bool:
+        """Record one ARP observation (adapter, ip) → mac.
+        Returns True the first time a second distinct MAC appears for that IP
+        (i.e. the moment a new conflict is discovered).
+        """
+        key = ((adapter or "?").strip(), ip.strip())
+        macs = self._arp_ip_mac.setdefault(key, set())
+        was_conflicted = len(macs) > 1
+        macs.add(mac.lower().strip())
+        is_conflicted = len(macs) > 1
+        return is_conflicted and not was_conflicted  # True only on the first new conflict
+
+    def _is_ip_conflict(self, adapter: str, ip: str) -> bool:
+        """Return True if ARP evidence shows >1 MAC for this (adapter, ip)."""
+        if not ip or ip == "0.0.0.0":
+            return False
+        key = ((adapter or "?").strip(), ip.strip())
+        return len(self._arp_ip_mac.get(key, set())) > 1
+
+    # ── Device lookup / creation ──────────────────────────────────────────────
 
     def _find_device(self, ip, mac):
         """Return existing non-EtherCAT device matching MAC or IP, or None."""
@@ -577,6 +631,12 @@ class App:
         if not ip and not mac:
             return
 
+        # Record ARP evidence BEFORE any merging.
+        new_conflict = False
+        if ip and ip not in ("0.0.0.0", "255.255.255.255") and mac:
+            adapter = (info.get("adapter") or "?").strip()
+            new_conflict = self._record_arp(adapter, ip, mac)
+
         dev, is_new = self._ensure_device(ip, mac, "ARP", info.get("adapter", "?"))
 
         changed = False
@@ -585,10 +645,21 @@ class App:
         changed |= self._fill_field(dev, "vendor_name", info.get("vendor_name") or info.get("keyword"))
         changed |= self._fill_field(dev, "adapter",     info.get("adapter"))
 
-        if is_new:
+        if is_new or new_conflict:
             self._refresh_vendor_filter_options()
             self._rebuild_table()
-            self.log_message(f"Wykryto urządzenie: {ip or mac}")
+            if is_new:
+                self.log_message(f"Wykryto urządzenie: {ip or mac}")
+            if new_conflict:
+                adapter = (info.get("adapter") or "?").strip()
+                macs = sorted(self._arp_ip_mac.get((adapter, ip), set()))
+                key = (adapter, ip)
+                if key not in self._arp_conflict_logged:
+                    self._arp_conflict_logged.add(key)
+                    self.log_message(
+                        f"[UWAGA] Konflikt IP w ARP ({adapter}): {ip} — "
+                        f"wiele MAC: {', '.join(macs)}"
+                    )
         elif changed:
             self._refresh_vendor_filter_options()
             self._rebuild_table()
@@ -817,6 +888,8 @@ class App:
         self.found_devices.clear()
         with self._probe_lock:
             self._scheduled_protocol_probes.clear()
+        self._arp_ip_mac.clear()
+        self._arp_conflict_logged.clear()
         self._refresh_vendor_filter_options()
         for row in self.tree.get_children():
             self.tree.delete(row)
