@@ -1,13 +1,13 @@
 # ProtocolHarbor
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green)
 
 A network scanning tool for detecting industrial field devices without prior knowledge of the subnet. Designed for engineers and system integrators working with industrial hardware.
 
-> **Current version:** `v1.1.0` — multi-protocol industrial device discovery
+> **Current version:** `v1.2.0` — multi-protocol industrial device discovery
 
 ---
 
@@ -120,12 +120,12 @@ ProtocolHarbor/
 
 | Protocol | Status |
 |---|---|
-| ARP | ✅ v1.1.0 |
-| LLDP | ✅ v1.1.0 |
-| EtherNet/IP | ✅ v1.1.0 |
-| Modbus TCP | ✅ v1.1.0 |
-| EtherCAT | ✅ v1.1.0 |
-| Profinet DCP | ✅ v1.1.0 |
+| ARP | ✅ v1.2.0 |
+| LLDP | ✅ v1.2.0 |
+| EtherNet/IP | ✅ v1.2.0 |
+| Modbus TCP | ✅ v1.2.0 |
+| EtherCAT | ✅ v1.2.0 |
+| Profinet DCP | ✅ v1.2.0 |
 
 ---
 

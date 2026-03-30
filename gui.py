@@ -24,7 +24,7 @@ from profinet_scanner import (
     identify_dcp_device,
 )
 from lldp_scanner import start_lldp_scan_all, start_lldp_scan
-from ethercat_scanner import start_ecat_scan_all, start_ecat_scan
+from ethercat_scanner import start_ecat_scan_all, start_ecat_scan, switch_balluff_xg_to_eip
 from ethernetip_scanner import probe_enip_device
 from modbus_scanner import probe_modbus_device
 from vendor_registry import lookup_vendor_name, lookup_vendor_from_mac
@@ -72,6 +72,7 @@ class App:
         # A conflict exists when the set has more than one distinct MAC.
         self._arp_ip_mac: dict = {}
         self._arp_conflict_logged: set = set()
+        self._tree_row_device_map: dict = {}
         self.vendor_filter_var = tk.StringVar(value=self._all_vendors_label)
         self._adapter_networks_by_mac: dict = {}
 
@@ -345,7 +346,11 @@ class App:
             )
             device_desc = info.get("lldp_system_description", "")
 
-        config_btn = "⚙" if protocol == "Profinet DCP" else ""
+        config_btn = ""
+        if protocol == "Profinet DCP":
+            config_btn = "⚙"
+        elif self._is_balluff_xg_ethercat(info):
+            config_btn = "EIP"
         return (
             config_btn,
             info.get("ip", ""),
@@ -360,6 +365,33 @@ class App:
             info.get("adapter", "?"),
         )
 
+    def _is_balluff_xg_ethercat(self, info: dict) -> bool:
+        if (info.get("protocol") or "") != "EtherCAT":
+            return False
+
+        vid = -1
+        try:
+            vid = int(info.get("vendor_id_dec"))
+        except Exception:
+            vid_raw = str(info.get("vendor_id", "")).strip()
+            try:
+                vid = int(vid_raw, 16) if vid_raw.lower().startswith("0x") else int(vid_raw)
+            except Exception:
+                vid = -1
+
+        # Official ETG Balluff ID is 0x010000E8; keep 0x00000378 for compatibility.
+        if vid not in {0x010000E8, 0x00000378}:
+            return False
+
+        name = (
+            info.get("product_name")
+            or info.get("name")
+            or info.get("device_name_sdo")
+            or info.get("sii_name")
+            or ""
+        )
+        return str(name).upper().startswith("BNI XG")
+
     def _is_visible(self, info):
         selected = self.vendor_filter_var.get() or self._all_vendors_label
         if selected == self._all_vendors_label:
@@ -367,13 +399,15 @@ class App:
         return self._producer_for_info(info) == selected
 
     def _rebuild_table(self):
+        self._tree_row_device_map.clear()
         for row in self.tree.get_children():
             self.tree.delete(row)
         for info in self.found_devices:
             if self._is_visible(info):
                 tag = self._get_row_tag(info)
                 tags = (tag,) if tag else ()
-                self.tree.insert("", "end", values=self._device_to_row(info), tags=tags)
+                row_id = self.tree.insert("", "end", values=self._device_to_row(info), tags=tags)
+                self._tree_row_device_map[row_id] = info
 
     def _hex_to_text_details(self, hex_value):
         text = str(hex_value or "").strip()
@@ -983,7 +1017,7 @@ class App:
         self.found_devices.append(info)
         self._refresh_vendor_filter_options()
         if self._is_visible(info):
-            self.tree.insert("", "end", values=self._device_to_row(info))
+            self._rebuild_table()
         self.log_message(f"Wykryto urządzenie EtherCAT: {product_name or info.get('ip', '?')}")
         self._log_ecat_diagnostics(info)
 
@@ -1132,6 +1166,7 @@ class App:
 
     def clear_results(self):
         self.found_devices.clear()
+        self._tree_row_device_map.clear()
         with self._probe_lock:
             self._scheduled_protocol_probes.clear()
         self._arp_ip_mac.clear()
@@ -1144,7 +1179,7 @@ class App:
     # ── Tree click handler ────────────────────────────────────────────────────
 
     def _on_tree_click(self, event):
-        """Handle clicks on treeview rows. Opens Profinet config dialog when ⚙ column is clicked."""
+        """Handle clicks on first action column (⚙ for Profinet, EIP for EtherCAT)."""
         region = self.tree.identify_region(event.x, event.y)
         if region != "cell":
             return
@@ -1160,14 +1195,108 @@ class App:
             return
         # cols order: config(0), ip(1), mac(2), ...
         values = self.tree.item(row_id, "values")
-        if not values or values[0] != "⚙":
+        if not values:
             return
-        row_ip  = values[1] if len(values) > 1 else ""
-        row_mac = values[2] if len(values) > 2 else ""
-        dev = self._find_device(row_ip, row_mac)
+        dev = self._tree_row_device_map.get(row_id)
         if dev is None:
             return
-        self._open_profinet_config(dev)
+        action = values[0]
+        if action == "⚙":
+            self._open_profinet_config(dev)
+        elif action == "EIP":
+            self._open_ethercat_eip_dialog(dev)
+
+    def _open_ethercat_eip_dialog(self, dev: dict):
+        """Dialog for switching Balluff BNI XG EtherCAT device to Ethernet/IP."""
+        win = tk.Toplevel(self.root)
+        win.title("EtherCAT -> Ethernet/IP")
+        win.geometry("490x260")
+        win.resizable(False, False)
+        win.grab_set()
+
+        panel = tk.LabelFrame(win, text="Przełączenie interfejsu", padx=10, pady=8)
+        panel.pack(fill="both", expand=True, padx=10, pady=10)
+
+        module_name = dev.get("product_name") or dev.get("name") or "?"
+        rows = [
+            ("Moduł:", module_name),
+            ("Vendor ID:", dev.get("vendor_id", "?")),
+            ("Slave index:", str(dev.get("slave_index", "?"))),
+            ("Adapter:", dev.get("adapter", "?")),
+        ]
+        for i, (k, v) in enumerate(rows):
+            tk.Label(panel, text=k, font=("Segoe UI", 8, "bold"), anchor="w").grid(row=i, column=0, sticky="w", padx=(0, 8))
+            tk.Label(panel, text=v, font=("Segoe UI", 8), anchor="w").grid(row=i, column=1, sticky="w")
+
+        tk.Label(
+            panel,
+            text="Akcja wyśle sekwencję CoE SDO (set + reboot): 0xF502:02, 0xF503:01, 0xF503:02.",
+            font=("Segoe UI", 8),
+            fg="#555",
+            wraplength=455,
+            justify="left",
+            anchor="w",
+        ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(8, 0))
+
+        status_var = tk.StringVar(value="")
+        status_lbl = tk.Label(panel, textvariable=status_var, font=("Segoe UI", 8), wraplength=455, anchor="w")
+        status_lbl.grid(row=5, column=0, columnspan=2, sticky="w", pady=(8, 0))
+
+        def _switch():
+            btn_switch.config(state="disabled")
+            status_var.set("Wysyłanie sekwencji…")
+            status_lbl.config(fg="#444")
+
+            if self.scanning:
+                self._stop_scan()
+                self.log_message("[EtherCAT] Zatrzymano skan przed przełączeniem interfejsu.")
+
+            adapter = dev.get("adapter", "")
+            slave_index = int(dev.get("slave_index", -1))
+            expected_vendor_id = dev.get("vendor_id_dec")
+            expected_product_code = dev.get("product_code_dec")
+            expected_serial = dev.get("serial_dec")
+
+            def run():
+                ok, msg = switch_balluff_xg_to_eip(
+                    adapter,
+                    slave_index,
+                    expected_vendor_id=expected_vendor_id,
+                    expected_product_code=expected_product_code,
+                    expected_serial=expected_serial,
+                )
+
+                def finish():
+                    if ok:
+                        status_var.set(f"✓ {msg}. Zrób ponowny skan, aby sprawdzić efekt.")
+                        status_lbl.config(fg="#2e7d32")
+                        self.log_message(
+                            f"[EtherCAT] Wysłano przełączenie do EIP: {module_name} (slave {slave_index})"
+                        )
+                    else:
+                        status_var.set(f"✗ {msg}")
+                        status_lbl.config(fg="#c62828")
+                        self.log_message(
+                            f"[EtherCAT] Błąd przełączenia do EIP: {module_name} (slave {slave_index}) -> {msg}"
+                        )
+                    btn_switch.config(state="normal")
+
+                self.root.after(0, finish)
+
+            threading.Thread(target=run, daemon=True).start()
+
+        btn_bar = tk.Frame(win)
+        btn_bar.pack(fill="x", padx=10, pady=(0, 8))
+        btn_switch = tk.Button(
+            btn_bar,
+            text="Przełącz na EIP",
+            command=_switch,
+            bg="#1565c0",
+            fg="white",
+            font=("Segoe UI", 8, "bold"),
+        )
+        btn_switch.pack(side="left")
+        tk.Button(btn_bar, text="Zamknij", command=win.destroy, font=("Segoe UI", 8)).pack(side="right")
 
     # ── Profinet config dialog ────────────────────────────────────────────────
 
