@@ -27,11 +27,12 @@ $projectRootPath = (Resolve-Path $ProjectRoot).Path
 $distPath = Join-Path $projectRootPath $DistDir
 $releasePath = Join-Path $projectRootPath $ReleaseDir
 $version = Get-ProjectVersion -VersionFile (Join-Path $projectRootPath 'version.py')
+$versionReleasePath = Join-Path $releasePath $version
 $releaseBaseName = "ProtocolHarbor-$version-win64"
-$stagingPath = Join-Path $releasePath $releaseBaseName
+$stagingPath = Join-Path $versionReleasePath $releaseBaseName
 $exePath = Join-Path $distPath $ExeName
-$zipPath = Join-Path $releasePath ($releaseBaseName + '.zip')
-$checksumPath = Join-Path $releasePath ($releaseBaseName + '.sha256.txt')
+$zipPath = Join-Path $versionReleasePath ($releaseBaseName + '.zip')
+$checksumPath = Join-Path $versionReleasePath ($releaseBaseName + '.sha256.txt')
 $includedFiles = @(
     'README.md',
     'LICENSE',
@@ -43,6 +44,7 @@ if (-not (Test-Path -Path $exePath -PathType Leaf)) {
 }
 
 New-Item -ItemType Directory -Path $releasePath -Force | Out-Null
+New-Item -ItemType Directory -Path $versionReleasePath -Force | Out-Null
 
 if (Test-Path -Path $stagingPath) {
     Remove-Item -Path $stagingPath -Recurse -Force

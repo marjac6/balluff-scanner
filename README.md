@@ -1,13 +1,13 @@
 # ProtocolHarbor
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.1-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green)
 
 A network scanning tool for detecting industrial field devices without prior knowledge of the subnet. Designed for engineers and system integrators working with industrial hardware.
 
-> **Current version:** `v1.0.0` — multi-protocol industrial device discovery
+> **Current version:** `v1.0.1` — multi-protocol industrial device discovery
 
 ---
 
@@ -17,7 +17,10 @@ A network scanning tool for detecting industrial field devices without prior kno
 - Scans all network adapters simultaneously or a single selected adapter
 - Continuous scan with in-place updates when device protocol changes
 - Unified device list (single row per physical device; EtherCAT entries remain separate)
-- Displays IP, MAC, producer, module name, protocol, VendorID, DeviceID, version and adapter
+- Displays IP, MAC, producer, module name, device description, protocol, VendorID, DeviceID, version and adapter
+- Visual row highlighting for duplicate IP conflicts and subnet match/mismatch
+- Vendor fallback resolution from MAC OUI (IEEE database)
+- Extended Profinet DCP metadata extraction (includes additional firmware/device-family fields when advertised)
 - LLDP-based enrichment for missing metadata (for example firmware)
 - Resizable GUI with live log, version bar and changelog popup
 
@@ -82,8 +85,8 @@ Release and SmartScreen publication guidance is documented in `RELEASE_CHECKLIST
 
 Output:
 
-- `release\ProtocolHarbor-<version>-win64.zip`
-- `release\ProtocolHarbor-<version>-win64.sha256.txt`
+- `release\<version>\ProtocolHarbor-<version>-win64.zip`
+- `release\<version>\ProtocolHarbor-<version>-win64.sha256.txt`
 
 The ZIP contains `ProtocolHarbor.exe`, `README.md`, `LICENSE`, and `CHANGELOG.md` inside a versioned folder.
 
@@ -117,12 +120,12 @@ ProtocolHarbor/
 
 | Protocol | Status |
 |---|---|
-| ARP | ✅ v1.0.0 |
-| LLDP | ✅ v1.0.0 |
-| EtherNet/IP | ✅ v1.0.0 |
-| Modbus TCP | ✅ v1.0.0 |
-| EtherCAT | ✅ v1.0.0 |
-| Profinet DCP | ✅ v1.0.0 |
+| ARP | ✅ v1.0.1 |
+| LLDP | ✅ v1.0.1 |
+| EtherNet/IP | ✅ v1.0.1 |
+| Modbus TCP | ✅ v1.0.1 |
+| EtherCAT | ✅ v1.0.1 |
+| Profinet DCP | ✅ v1.0.1 |
 
 ---
 

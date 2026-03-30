@@ -1,5 +1,17 @@
 Changelog
 
+[1.0.1]
+
+- Added device description column in the main table for protocol-specific metadata (for example Profinet type of station).
+- Added RFC 5227 style ARP conflict detection based on packet evidence (same IP seen with multiple MAC addresses).
+- Added row highlighting rules:
+	- red for duplicate/conflicting IPs,
+	- light green for devices in the same subnet as the selected adapter,
+	- light yellow for devices outside the adapter subnet.
+- Added producer fallback from MAC OUI using the bundled IEEE vendor database (Scapy manuf data).
+- Extended Profinet DCP parsing to extract additional optional metadata including device family and firmware where available.
+- Fixed subnet coloring stability on Windows by hardening ipconfig parsing and adding caching.
+
 [1.0.0]
 
 - Vendor-agnostic branding and documentation
