@@ -413,7 +413,7 @@ class App:
 
     def _adapter_sig(self, adapters):
         return tuple(
-            (a.get("name", ""), a.get("description", ""), tuple(a.get("ips", [])))
+            (a.get("name", ""), a.get("description", ""), tuple(sorted(a.get("ips", []))))
             for a in adapters
         )
 
@@ -426,14 +426,27 @@ class App:
         if not selected_value or selected_value == "Wszystkie adaptery":
             return -1
 
+        # Fast exact match first.
         for index, adapter in enumerate(self.adapters):
             if self._adapter_label(adapter) == selected_value:
+                return index
+
+        # Stable fallback by adapter description/name in case IP order in label changed.
+        selected_head = selected_value.split("  [", 1)[0].strip().lower()
+        for index, adapter in enumerate(self.adapters):
+            desc = (adapter.get("description") or "").strip().lower()
+            name = (adapter.get("name") or "").strip().lower()
+            if selected_head and (selected_head == desc or selected_head == name):
                 return index
         return -1
 
     def _refresh_adapters(self, force_log=False):
         current_value = self.adapter_var.get()
         current_index = self._get_selected_adapter_index()
+        selected_name = ""
+        if 0 <= current_index < len(self.adapters):
+            selected_name = (self.adapters[current_index].get("name") or "").strip()
+
         new_adapters = get_adapters()
         new_sig = self._adapter_sig(new_adapters)
         if not force_log and new_sig == self._adapter_signature:
@@ -446,13 +459,23 @@ class App:
         names = ["Wszystkie adaptery"] + [self._adapter_label(a) for a in self.adapters]
         self.adapter_cb["values"] = names
 
-        if current_value in names:
+        # Prefer restoring by stable adapter name, not full label text.
+        restored = False
+        if selected_name:
+            for idx, adapter in enumerate(self.adapters):
+                if (adapter.get("name") or "").strip() == selected_name:
+                    self.adapter_cb.current(idx + 1)
+                    restored = True
+                    break
+
+        if not restored and current_value in names:
             self.adapter_cb.current(names.index(current_value))
         else:
-            self.adapter_cb.current(0)
-            if self.scanning and current_index > 0:
-                self.log_message("Selected adapter disconnected/removed. Stopping scan.")
-                self._stop_scan()
+            if not restored:
+                self.adapter_cb.current(0)
+                if self.scanning and current_index > 0:
+                    self.log_message("Selected adapter disconnected/removed. Stopping scan.")
+                    self._stop_scan()
 
         LOGGER.debug("Adapters updated: %s available.", len(self.adapters))
 
@@ -565,55 +588,95 @@ class App:
         mac_re = re.compile(r"([0-9A-Fa-f]{2}(?:-[0-9A-Fa-f]{2}){5})")
         ip_re = re.compile(r"(\d{1,3}(?:\.\d{1,3}){3})")
 
-        try:
-            output = subprocess.check_output(
-                ["ipconfig", "/all"],
-                text=True,
-                encoding="cp1252",
-                errors="replace",
-                timeout=4,
-            )
-        except Exception as e:
-            LOGGER.debug("ipconfig cache build failed: %s", e)
-            return
+        output = ""
+        ipconfig_candidates = [
+            ["ipconfig", "/all"],
+            [os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32", "ipconfig.exe"), "/all"],
+        ]
+        for cmd in ipconfig_candidates:
+            try:
+                output = subprocess.check_output(
+                    cmd,
+                    text=True,
+                    encoding="cp1252",
+                    errors="replace",
+                    timeout=8,
+                )
+                if output:
+                    break
+            except Exception as e:
+                LOGGER.debug("ipconfig call failed for %s: %s", cmd[0], e)
+
+        if not output:
+            LOGGER.debug("Subnet cache: no ipconfig output available, using adapter fallback only")
 
         current_mac = ""
         current_ip = ""
 
-        for raw_line in output.splitlines():
-            line = raw_line.strip()
-            if not line:
+        if output:
+            for raw_line in output.splitlines():
+                line = raw_line.strip()
+                if not line:
+                    continue
+
+                low = line.lower()
+
+                if "physical address" in low or "mac address" in low or "adres fizyczny" in low:
+                    m = mac_re.search(line)
+                    current_mac = m.group(1).lower().replace("-", ":") if m else ""
+                    current_ip = ""
+                    continue
+
+                if (
+                    "ipv4 address" in low
+                    or "autoconfiguration ipv4 address" in low
+                    or "adres ipv4" in low
+                ):
+                    if current_mac:
+                        m = ip_re.search(line)
+                        current_ip = m.group(1) if m else ""
+                    continue
+
+                if "subnet mask" in low or "maska podsieci" in low:
+                    if current_mac and current_ip:
+                        m = ip_re.search(line)
+                        if m:
+                            mask_str = m.group(1)
+                            try:
+                                net = ipaddress.ip_network(f"{current_ip}/{mask_str}", strict=False)
+                                self._adapter_networks_by_mac.setdefault(current_mac, []).append(net)
+                            except ValueError:
+                                pass
+                    current_ip = ""
+
+        # Fallback for frozen/runtime edge-cases: infer local segment networks from adapter IPv4s.
+        for adapter in self.adapters:
+            mac = (adapter.get("mac") or "").strip().lower().replace("-", ":")
+            if not mac:
+                continue
+            if self._adapter_networks_by_mac.get(mac):
                 continue
 
-            low = line.lower()
+            for ip_raw in adapter.get("ips", []):
+                ip_s = (ip_raw or "").strip()
+                if ":" in ip_s or not ip_s:
+                    continue
+                try:
+                    ip_obj = ipaddress.ip_address(ip_s)
+                except ValueError:
+                    continue
 
-            if "physical address" in low or "mac address" in low or "adres fizyczny" in low:
-                m = mac_re.search(line)
-                current_mac = m.group(1).lower().replace("-", ":") if m else ""
-                current_ip = ""
-                continue
+                if ip_s.startswith("169.254."):
+                    prefix = 16
+                else:
+                    # Conservative fallback used only when netmask is unavailable.
+                    prefix = 24
 
-            if (
-                "ipv4 address" in low
-                or "autoconfiguration ipv4 address" in low
-                or "adres ipv4" in low
-            ):
-                if current_mac:
-                    m = ip_re.search(line)
-                    current_ip = m.group(1) if m else ""
-                continue
-
-            if "subnet mask" in low or "maska podsieci" in low:
-                if current_mac and current_ip:
-                    m = ip_re.search(line)
-                    if m:
-                        mask_str = m.group(1)
-                        try:
-                            net = ipaddress.ip_network(f"{current_ip}/{mask_str}", strict=False)
-                            self._adapter_networks_by_mac.setdefault(current_mac, []).append(net)
-                        except ValueError:
-                            pass
-                current_ip = ""
+                try:
+                    net = ipaddress.ip_network(f"{ip_obj}/{prefix}", strict=False)
+                    self._adapter_networks_by_mac.setdefault(mac, []).append(net)
+                except ValueError:
+                    continue
 
         LOGGER.debug("Subnet cache built for %d adapter MAC(s)", len(self._adapter_networks_by_mac))
 
