@@ -102,10 +102,45 @@ def parse_dcp_payload(src_mac, payload):
                 # Device Role: BlockInfo(2) + Role(1) + Reserved(1)
                 if len(block_data) >= 3:
                     result["device_role"] = f"0x{block_data[2]:02X}"
+            elif (opt, subopt) == (0x02, 0x05):
+                # Device Options / Features: often contains HW and SW revision
+                # Format varies; attempt to extract as ASCII string or hex.
+                if len(block_data) > 2:
+                    try:
+                        text = value.decode("ascii", errors="ignore").strip()
+                        if text:
+                            result["device_family"] = text
+                    except Exception:
+                        pass
+            elif (opt, subopt) == (0x02, 0x06):
+                # Device Revision / Hardware Revision: typically HW version + SW version
+                # Format: BlockInfo(2) + HWrev(1) + SWrev_prefix(1) + SWrev_main(1)
+                # or just a string like "V1.0.0"
+                if len(block_data) > 2:
+                    try:
+                        text = value.decode("ascii", errors="ignore").strip()
+                        if text and not result.get("firmware"):
+                            result["firmware"] = text
+                    except Exception:
+                        # Fallback: try as bytes HW.SW format
+                        if len(block_data) >= 5:
+                            hw = block_data[2]
+                            sw_pre = block_data[3]
+                            sw_main = block_data[4]
+                            result["firmware"] = f"HW:{hw:02X} SW:{sw_pre:02X}.{sw_main:02X}"
             elif (opt, subopt) == (0x02, 0x07):
                 # Device Instance: BlockInfo(2) + High(1) + Low(1)
                 if len(block_data) >= 4:
                     result["device_instance"] = f"{block_data[2]}.{block_data[3]}"
+            elif (opt, subopt) == (0x02, 0x08):
+                # Vendor Specific: may contain firmware/version info
+                if len(block_data) > 2 and not result.get("firmware"):
+                    try:
+                        text = value.decode("ascii", errors="ignore").strip()
+                        if text:
+                            result["firmware"] = text
+                    except Exception:
+                        pass
 
         return result if result["mac"] else None
     except Exception as e:
