@@ -9,6 +9,7 @@ import string
 import time
 import ipaddress
 import subprocess
+import re
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 from PIL import Image, ImageTk
@@ -66,7 +67,7 @@ class App:
         self._arp_ip_mac: dict = {}
         self._arp_conflict_logged: set = set()
         self.vendor_filter_var = tk.StringVar(value=self._all_vendors_label)
-        self._ipconfig_cache = {}  # Cache ipconfig results {adapter_mac → {ip → netmask}}
+        self._adapter_networks_by_mac: dict = {}
 
         def svg_to_tkimg(svg_path, size=(16, 16)):
             drawing = svg2rlg(svg_path)
@@ -440,6 +441,7 @@ class App:
 
         self.adapters = new_adapters
         self._adapter_signature = new_sig
+        self._refresh_adapter_networks()
 
         names = ["Wszystkie adaptery"] + [self._adapter_label(a) for a in self.adapters]
         self.adapter_cb["values"] = names
@@ -556,68 +558,86 @@ class App:
 
     # ── ARP conflict detection (RFC 5227 / Wireshark style) ──────────────────
 
-    def _get_adapter_netmask_from_ipconfig(self, adapter_mac: str) -> dict:
-        """Parse ipconfig /all and find netmask for the interface with matching MAC.
-        
-        Returns dict: {ip_address → netmask} or empty dict if not found.
-        Caches results to avoid repeated ipconfig calls.
-        """
-        # Check cache first
-        if adapter_mac in self._ipconfig_cache:
-            return self._ipconfig_cache[adapter_mac]
-        
-        result = {}
+    def _refresh_adapter_networks(self):
+        """Build a fast MAC->IPv4 networks cache from ipconfig once per adapter refresh."""
+        self._adapter_networks_by_mac = {}
+
+        mac_re = re.compile(r"([0-9A-Fa-f]{2}(?:-[0-9A-Fa-f]{2}){5})")
+        ip_re = re.compile(r"(\d{1,3}(?:\.\d{1,3}){3})")
+
         try:
-            output = subprocess.check_output(["ipconfig", "/all"], text=True, encoding="cp1252", timeout=5)
+            output = subprocess.check_output(
+                ["ipconfig", "/all"],
+                text=True,
+                encoding="cp1252",
+                errors="replace",
+                timeout=4,
+            )
         except Exception as e:
-            LOGGER.debug(f"ipconfig call failed: {e}")
-            self._ipconfig_cache[adapter_mac] = {}
-            return {}
-        
-        if not output:
-            self._ipconfig_cache[adapter_mac] = {}
-            return {}
-        
-        current_ip = None
-        current_mac = None
-        
-        # Parse output line by line
-        try:
-            for line in output.split("\n"):
-                line = line.strip()
-                
-                # Watch for MAC address
-                if "Physical Address" in line or "MAC Address" in line:
-                    parts = line.split(":")
-                    if len(parts) >= 2:
-                        mac_str = parts[1].strip().lower()
-                        # Normalize MAC format (e.g., "ac-b4-80-ca-ba-6d" → "ac:b4:80:ca:ba:6d")
-                        mac_str = mac_str.replace("-", ":")
-                        current_mac = mac_str
-                        current_ip = None
-                
-                # Watch for IPv4 Address
-                elif "IPv4 Address" in line and current_mac and current_mac == adapter_mac:
-                    parts = line.split(":")
-                    if len(parts) >= 2:
-                        ip_str = parts[1].strip()
-                        # Remove any parentheses
-                        ip_str = ip_str.replace("(Preferred)", "").strip()
-                        current_ip = ip_str
-                
-                # Watch for Subnet Mask
-                elif "Subnet Mask" in line and current_mac and current_mac == adapter_mac and current_ip:
-                    parts = line.split(":")
-                    if len(parts) >= 2:
-                        mask_str = parts[1].strip()
-                        result[current_ip] = mask_str
-                        current_ip = None
-        except Exception as e:
-            LOGGER.debug(f"ipconfig parsing failed: {e}")
-        
-        # Cache the result
-        self._ipconfig_cache[adapter_mac] = result
-        return result
+            LOGGER.debug("ipconfig cache build failed: %s", e)
+            return
+
+        current_mac = ""
+        current_ip = ""
+
+        for raw_line in output.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+
+            low = line.lower()
+
+            if "physical address" in low or "mac address" in low or "adres fizyczny" in low:
+                m = mac_re.search(line)
+                current_mac = m.group(1).lower().replace("-", ":") if m else ""
+                current_ip = ""
+                continue
+
+            if (
+                "ipv4 address" in low
+                or "autoconfiguration ipv4 address" in low
+                or "adres ipv4" in low
+            ):
+                if current_mac:
+                    m = ip_re.search(line)
+                    current_ip = m.group(1) if m else ""
+                continue
+
+            if "subnet mask" in low or "maska podsieci" in low:
+                if current_mac and current_ip:
+                    m = ip_re.search(line)
+                    if m:
+                        mask_str = m.group(1)
+                        try:
+                            net = ipaddress.ip_network(f"{current_ip}/{mask_str}", strict=False)
+                            self._adapter_networks_by_mac.setdefault(current_mac, []).append(net)
+                        except ValueError:
+                            pass
+                current_ip = ""
+
+        LOGGER.debug("Subnet cache built for %d adapter MAC(s)", len(self._adapter_networks_by_mac))
+
+    def _resolve_adapter_mac(self, adapter_name: str) -> str:
+        """Resolve adapter MAC from adapter name/description reported by scanners."""
+        needle = (adapter_name or "").strip().lower()
+        if not needle:
+            return ""
+
+        for adapter in self.adapters:
+            name = (adapter.get("name") or "").strip().lower()
+            desc = (adapter.get("description") or "").strip().lower()
+            mac = (adapter.get("mac") or "").strip().lower().replace("-", ":")
+            if not mac:
+                continue
+
+            if needle == name or needle == desc:
+                return mac
+            if needle.endswith(name) or needle.endswith(desc):
+                return mac
+            if name and name in needle:
+                return mac
+
+        return ""
 
     def _is_ip_in_adapter_subnet(self, adapter_name: str, device_ip: str) -> bool:
         """Check if device_ip is in the same subnet as any IP assigned to adapter_name."""
@@ -628,30 +648,32 @@ class App:
             dev_addr = ipaddress.ip_address(device_ip)
         except ValueError:
             return False
-        
-        # Find adapter by name in self.adapters to get its MAC
-        adapter_mac = None
-        for adapter in self.adapters:
-            if adapter.get("name") == adapter_name or adapter.get("name", "").endswith(adapter_name):
-                mac_str = (adapter.get("mac") or "").lower()
-                # Normalize MAC format
-                adapter_mac = mac_str.replace("-", ":")
-                break
-        
-        if not adapter_mac:
+
+        candidate_macs = []
+
+        # Primary reference: currently selected adapter ("moja karta sieciowa").
+        selected_index = self._get_selected_adapter_index()
+        if 0 <= selected_index < len(self.adapters):
+            mac_str = (self.adapters[selected_index].get("mac") or "").lower()
+            selected_mac = mac_str.replace("-", ":")
+            if selected_mac:
+                candidate_macs.append(selected_mac)
+
+        # Fallback/additional reference from packet-reported adapter.
+        adapter_mac = self._resolve_adapter_mac(adapter_name)
+        if adapter_mac and adapter_mac not in candidate_macs:
+            candidate_macs.append(adapter_mac)
+
+        if not candidate_macs:
             return False
-        
-        # Get netmask info from ipconfig
-        ip_to_mask = self._get_adapter_netmask_from_ipconfig(adapter_mac)
-        
-        # Check if device_ip is in any of the subnets
-        for ip_str, mask_str in ip_to_mask.items():
-            try:
-                network = ipaddress.ip_network(f"{ip_str}/{mask_str}", strict=False)
-                if dev_addr in network:
-                    return True
-            except (ValueError, ipaddress.AddressValueError):
-                continue
+
+        for mac in candidate_macs:
+            for network in self._adapter_networks_by_mac.get(mac, []):
+                try:
+                    if dev_addr in network:
+                        return True
+                except Exception:
+                    continue
         
         return False
 
