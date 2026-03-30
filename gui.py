@@ -16,7 +16,13 @@ from PIL import Image, ImageTk
 from io import BytesIO
 from version import __version__
 from scanner import get_adapters, start_scan, start_active_scan, send_arp_probe
-from profinet_scanner import start_dcp_scan_all, start_dcp_scan
+from profinet_scanner import (
+    start_dcp_scan_all,
+    start_dcp_scan,
+    send_dcp_set_ip,
+    send_dcp_set_name,
+    identify_dcp_device,
+)
 from lldp_scanner import start_lldp_scan_all, start_lldp_scan
 from ethercat_scanner import start_ecat_scan_all, start_ecat_scan
 from ethernetip_scanner import probe_enip_device
@@ -138,9 +144,13 @@ class App:
         self.vendor_filter_cb.bind("<<ComboboxSelected>>", self._on_vendor_filter_change)
         self._refresh_vendor_filter_options()
 
-        cols = ("ip", "mac", "producer", "module_name", "device_desc", "protocol", "vendor_id", "device_id", "version", "adapter")
+        # Columns: config first (gear), then priority cols, then secondary.
+        # Total widths fit in ~967px available (1020px window − padding − scrollbar).
+        # Priority: config, ip, producer, module_name, protocol — others shrink if needed.
+        cols = ("config", "ip", "mac", "producer", "module_name", "device_desc", "protocol", "vendor_id", "device_id", "version", "adapter")
         self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", height=8)
 
+        self.tree.heading("config",      text="")
         self.tree.heading("ip",          text="Adres IP")
         self.tree.heading("mac",         text="Adres MAC")
         self.tree.heading("producer",    text="Producent")
@@ -152,16 +162,21 @@ class App:
         self.tree.heading("version",     text="Wersja")
         self.tree.heading("adapter",     text="Adapter")
 
-        self.tree.column("ip",          width=110)
-        self.tree.column("mac",         width=140)
-        self.tree.column("producer",    width=140)
-        self.tree.column("module_name", width=160)
-        self.tree.column("device_desc", width=160)
-        self.tree.column("protocol",    width=105)
-        self.tree.column("vendor_id",   width=100)
-        self.tree.column("device_id",   width=120)
-        self.tree.column("version",     width=85)
-        self.tree.column("adapter",     width=155)
+        # config fixed; priority cols non-shrinkable; secondary cols shrink when window narrows.
+        self.tree.column("config",      width=30,  minwidth=30,  stretch=False)
+        self.tree.column("ip",          width=100, minwidth=100, stretch=False)
+        self.tree.column("mac",         width=112, minwidth=60)
+        self.tree.column("producer",    width=112, minwidth=90,  stretch=False)
+        self.tree.column("module_name", width=140, minwidth=90,  stretch=False)
+        self.tree.column("device_desc", width=78,  minwidth=40)
+        self.tree.column("protocol",    width=90,  minwidth=90,  stretch=False)
+        self.tree.column("vendor_id",   width=60,  minwidth=40)
+        self.tree.column("device_id",   width=65,  minwidth=40)
+        self.tree.column("version",     width=55,  minwidth=40)
+        self.tree.column("adapter",     width=105, minwidth=50)
+        # sum of widths above = 947px — fits within ~967px available
+
+        self.tree.bind("<Button-1>", self._on_tree_click)
 
         scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scroll.set)
@@ -330,7 +345,9 @@ class App:
             )
             device_desc = info.get("lldp_system_description", "")
 
+        config_btn = "⚙" if protocol == "Profinet DCP" else ""
         return (
+            config_btn,
             info.get("ip", ""),
             info.get("mac", ""),
             producer,
@@ -1123,3 +1140,257 @@ class App:
         for row in self.tree.get_children():
             self.tree.delete(row)
         self.log_message("Wyniki wyczyszczone.")
+
+    # ── Tree click handler ────────────────────────────────────────────────────
+
+    def _on_tree_click(self, event):
+        """Handle clicks on treeview rows. Opens Profinet config dialog when ⚙ column is clicked."""
+        region = self.tree.identify_region(event.x, event.y)
+        if region != "cell":
+            return
+        col_id = self.tree.identify_column(event.x)
+        row_id = self.tree.identify_row(event.y)
+        if not row_id:
+            return
+        col_index = int(col_id.lstrip("#")) - 1
+        col_names = self.tree["columns"]
+        if col_index < 0 or col_index >= len(col_names):
+            return
+        if col_names[col_index] != "config":
+            return
+        # cols order: config(0), ip(1), mac(2), ...
+        values = self.tree.item(row_id, "values")
+        if not values or values[0] != "⚙":
+            return
+        row_ip  = values[1] if len(values) > 1 else ""
+        row_mac = values[2] if len(values) > 2 else ""
+        dev = self._find_device(row_ip, row_mac)
+        if dev is None:
+            return
+        self._open_profinet_config(dev)
+
+    # ── Profinet config dialog ────────────────────────────────────────────────
+
+    def _open_profinet_config(self, dev: dict):
+        """Open the Profinet DCP configuration dialog for the given device."""
+        win = tk.Toplevel(self.root)
+        win.title("Konfiguracja Profinet DCP")
+        win.geometry("460x370")
+        win.resizable(False, False)
+        win.grab_set()
+
+        # ── Device info header ────────────────────────────────────────────
+        header = tk.LabelFrame(win, text="Urządzenie", padx=8, pady=6)
+        header.pack(fill="x", padx=10, pady=(10, 4))
+
+        info_rows = [
+            ("Adres MAC:",    dev.get("mac",             "")),
+            ("Aktualny IP:",  dev.get("ip",              "")),
+            ("Nazwa stacji:", dev.get("name_of_station", "")),
+            ("Adapter:",      dev.get("adapter",         "")),
+        ]
+        for row_idx, (label, value) in enumerate(info_rows):
+            tk.Label(header, text=label, anchor="w", font=("Segoe UI", 8, "bold")
+                     ).grid(row=row_idx, column=0, sticky="w", padx=(0, 6))
+            tk.Label(header, text=value or "—", anchor="w", font=("Segoe UI", 8)
+                     ).grid(row=row_idx, column=1, sticky="w")
+
+        # ── IP settings ───────────────────────────────────────────────────
+        ip_frame = tk.LabelFrame(win, text="Zmień adres IP", padx=8, pady=6)
+        ip_frame.pack(fill="x", padx=10, pady=4)
+
+        tk.Label(ip_frame, text="Nowy adres IP:", font=("Segoe UI", 8)).grid(row=0, column=0, sticky="w")
+        ip_var = tk.StringVar(value=dev.get("ip", ""))
+        tk.Entry(ip_frame, textvariable=ip_var, width=18, font=("Segoe UI", 8)
+                 ).grid(row=0, column=1, padx=6, sticky="w")
+
+        tk.Label(ip_frame, text="Maska podsieci:", font=("Segoe UI", 8)).grid(row=1, column=0, sticky="w", pady=2)
+        mask_var = tk.StringVar(value="255.255.255.0")
+        tk.Entry(ip_frame, textvariable=mask_var, width=18, font=("Segoe UI", 8)
+                 ).grid(row=1, column=1, padx=6, sticky="w")
+
+        tk.Label(ip_frame, text="Brama domyślna:", font=("Segoe UI", 8)).grid(row=2, column=0, sticky="w")
+        gw_var = tk.StringVar(value="0.0.0.0")
+        tk.Entry(ip_frame, textvariable=gw_var, width=18, font=("Segoe UI", 8)
+                 ).grid(row=2, column=1, padx=6, sticky="w")
+
+        ip_permanent_var = tk.BooleanVar(value=True)
+        tk.Checkbutton(ip_frame, text="Zapisz trwale (permanent)", variable=ip_permanent_var,
+                       font=("Segoe UI", 8)).grid(row=3, column=0, columnspan=2, sticky="w", pady=(4, 0))
+
+        ip_status_var = tk.StringVar(value="")
+        ip_status_lbl = tk.Label(ip_frame, textvariable=ip_status_var, font=("Segoe UI", 8),
+                                  anchor="w", wraplength=390)
+        ip_status_lbl.grid(row=4, column=0, columnspan=2, sticky="w", pady=(2, 0))
+
+        def _verify_persistence_async(field_name: str, expected_value: str, set_msg: str, status_var, status_lbl):
+            """Verify after SET whether value stayed on device or got overwritten by controller."""
+
+            adapter_name = dev.get("adapter", "")
+            target_mac = dev.get("mac", "")
+
+            def run_verify():
+                # Give PLC/controller a moment to potentially overwrite parameters.
+                time.sleep(1.6)
+                info = identify_dcp_device(adapter_name, target_mac, timeout=3.0)
+
+                def finish_verify():
+                    if not status_lbl.winfo_exists():
+                        return
+                    if not info:
+                        status_var.set("⚠ Nie udało się zweryfikować (brak odpowiedzi Identify).")
+                        status_lbl.config(fg="#e65100")
+                        return
+
+                    actual_ip = (info.get("ip") or "").strip()
+                    actual_name = (info.get("name_of_station") or "").strip().lower()
+
+                    # Refresh local row data from latest Identify response.
+                    if actual_ip:
+                        dev["ip"] = actual_ip
+                    if actual_name:
+                        dev["name_of_station"] = actual_name
+                    self._rebuild_table()
+
+                    if field_name == "ip":
+                        expected = expected_value.strip()
+                        if actual_ip == expected:
+                            status_var.set(f"✓ Zweryfikowano: IP utrzymany ({actual_ip})")
+                            status_lbl.config(fg="#2e7d32")
+                        else:
+                            if set_msg.startswith("OK"):
+                                status_var.set(
+                                    f"⚠ Weryfikacja: po chwili IP={actual_ip or '?'} (oczekiwano {expected}). "
+                                    "Zmiana nieutrzymana (możliwe nadpisanie przez controller lub logikę urządzenia)."
+                                )
+                            else:
+                                status_var.set(
+                                    f"⚠ Weryfikacja: IP pozostał {actual_ip or '?'} (oczekiwano {expected}). "
+                                    "SET nie został skutecznie potwierdzony przez urządzenie."
+                                )
+                            status_lbl.config(fg="#c62828")
+                            self.log_message(
+                                f"[Profinet] Weryfikacja: IP urządzenia {target_mac} niezgodny "
+                                f"({expected} -> {actual_ip or '?'}, set_msg={set_msg})"
+                            )
+                    elif field_name == "name":
+                        expected = expected_value.strip().lower()
+                        if actual_name == expected:
+                            status_var.set(f"✓ Zweryfikowano: nazwa utrzymana ({actual_name})")
+                            status_lbl.config(fg="#2e7d32")
+                        else:
+                            if set_msg.startswith("OK"):
+                                status_var.set(
+                                    f"⚠ Weryfikacja: po chwili nazwa='{actual_name or ''}' "
+                                    f"(oczekiwano '{expected}'). Zmiana nieutrzymana."
+                                )
+                            else:
+                                status_var.set(
+                                    f"⚠ Weryfikacja: nazwa pozostała '{actual_name or ''}' "
+                                    f"(oczekiwano '{expected}'). SET nie został skutecznie potwierdzony."
+                                )
+                            status_lbl.config(fg="#c62828")
+                            self.log_message(
+                                f"[Profinet] Weryfikacja: nazwa stacji {target_mac} niezgodna "
+                                f"('{expected}' -> '{actual_name or ''}', set_msg={set_msg})"
+                            )
+
+                self.root.after(0, finish_verify)
+
+            threading.Thread(target=run_verify, daemon=True).start()
+
+        def _set_ip():
+            btn_ip.config(state="disabled")
+            ip_status_var.set("Wysyłanie…")
+            win.update_idletasks()
+
+            def do():
+                ok, msg = send_dcp_set_ip(
+                    adapter_name=dev.get("adapter", ""),
+                    target_mac=dev.get("mac", ""),
+                    new_ip=ip_var.get().strip(),
+                    new_mask=mask_var.get().strip(),
+                    new_gateway=gw_var.get().strip(),
+                    permanent=ip_permanent_var.get(),
+                )
+                def finish():
+                    if ok:
+                        confirmed = msg.startswith("OK")
+                        ip_status_var.set(f"✓ {msg}")
+                        ip_status_lbl.config(fg="#2e7d32" if confirmed else "#e65100")
+                        dev["ip"] = ip_var.get().strip()
+                        self._rebuild_table()
+                        _verify_persistence_async("ip", ip_var.get().strip(), msg, ip_status_var, ip_status_lbl)
+                        self.log_message(
+                            f"[Profinet] IP urządzenia {dev.get('mac','')} → {ip_var.get().strip()} ({msg})"
+                        )
+                    else:
+                        ip_status_var.set(f"✗ {msg}")
+                        ip_status_lbl.config(fg="#c62828")
+                    btn_ip.config(state="normal")
+                win.after(0, finish)
+
+            threading.Thread(target=do, daemon=True).start()
+
+        btn_ip = tk.Button(ip_frame, text="Ustaw IP", font=("Segoe UI", 8, "bold"),
+                            bg="#1565c0", fg="white", command=_set_ip)
+        btn_ip.grid(row=5, column=0, columnspan=2, pady=(6, 2))
+
+        # ── Name settings ─────────────────────────────────────────────────
+        name_frame = tk.LabelFrame(win, text="Zmień nazwę stacji Profinet", padx=8, pady=6)
+        name_frame.pack(fill="x", padx=10, pady=4)
+
+        tk.Label(name_frame, text="Nowa nazwa:", font=("Segoe UI", 8)).grid(row=0, column=0, sticky="w")
+        name_var = tk.StringVar(value=dev.get("name_of_station", ""))
+        tk.Entry(name_frame, textvariable=name_var, width=30, font=("Segoe UI", 8)
+                 ).grid(row=0, column=1, padx=6, sticky="w")
+
+        tk.Label(name_frame, text="(a–z, 0–9, myślnik, kropka; maks. 240 znaków)",
+                 font=("Segoe UI", 7), fg="#666").grid(row=1, column=0, columnspan=2, sticky="w")
+
+        name_permanent_var = tk.BooleanVar(value=True)
+        tk.Checkbutton(name_frame, text="Zapisz trwale (permanent)", variable=name_permanent_var,
+                       font=("Segoe UI", 8)).grid(row=2, column=0, columnspan=2, sticky="w", pady=(4, 0))
+
+        name_status_var = tk.StringVar(value="")
+        name_status_lbl = tk.Label(name_frame, textvariable=name_status_var, font=("Segoe UI", 8),
+                                    anchor="w", wraplength=390)
+        name_status_lbl.grid(row=3, column=0, columnspan=2, sticky="w", pady=(2, 0))
+
+        def _set_name():
+            btn_name.config(state="disabled")
+            name_status_var.set("Wysyłanie…")
+            win.update_idletasks()
+
+            def do():
+                ok, msg = send_dcp_set_name(
+                    adapter_name=dev.get("adapter", ""),
+                    target_mac=dev.get("mac", ""),
+                    new_name=name_var.get().strip(),
+                    permanent=name_permanent_var.get(),
+                )
+                def finish():
+                    if ok:
+                        confirmed = msg.startswith("OK")
+                        name_status_var.set(f"✓ {msg}")
+                        name_status_lbl.config(fg="#2e7d32" if confirmed else "#e65100")
+                        dev["name_of_station"] = name_var.get().strip().lower()
+                        self._rebuild_table()
+                        _verify_persistence_async("name", name_var.get().strip(), msg, name_status_var, name_status_lbl)
+                        self.log_message(
+                            f"[Profinet] Nazwa stacji {dev.get('mac','')} → '{name_var.get().strip()}' ({msg})"
+                        )
+                    else:
+                        name_status_var.set(f"✗ {msg}")
+                        name_status_lbl.config(fg="#c62828")
+                    btn_name.config(state="normal")
+                win.after(0, finish)
+
+            threading.Thread(target=do, daemon=True).start()
+
+        btn_name = tk.Button(name_frame, text="Ustaw nazwę", font=("Segoe UI", 8, "bold"),
+                              bg="#1565c0", fg="white", command=_set_name)
+        btn_name.grid(row=4, column=0, columnspan=2, pady=(6, 2))
+
+        tk.Button(win, text="Zamknij", command=win.destroy,
+                  font=("Segoe UI", 8)).pack(pady=(4, 8))

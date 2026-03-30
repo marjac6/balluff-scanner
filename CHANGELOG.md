@@ -1,5 +1,16 @@
 Changelog
 
+[1.1.0]
+
+- Added Profinet DCP device configuration from GUI (gear action per Profinet row): set IP address and station name.
+- Added post-save verification flow (Identify) to confirm whether IP/name persisted on device.
+- Fixed DCP Set frame format compatibility (FrameID 0xFEFD) to match standard tooling behavior.
+- Fixed DCP raw send source MAC handling on Windows/Npcap (use real adapter MAC instead of 00:00:00:00:00:00).
+- Improved DCP response handling for VLAN-tagged PN-DCP frames.
+- Improved verification messaging to avoid false "controller overwrite" conclusions when not confirmed.
+- Moved Profinet gear column to first table column and adjusted column sizing priorities to fit window width without horizontal scrolling.
+- Removed screenshot.png from repository.
+
 [1.0.1]
 
 - Added device description column in the main table for protocol-specific metadata (for example Profinet type of station).
