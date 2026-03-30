@@ -73,6 +73,7 @@ class App:
         self._arp_ip_mac: dict = {}
         self._arp_conflict_logged: set = set()
         self._tree_row_device_map: dict = {}
+        self._tree_row_ip_state_map: dict = {}
         self.vendor_filter_var = tk.StringVar(value=self._all_vendors_label)
         self._adapter_networks_by_mac: dict = {}
 
@@ -101,6 +102,7 @@ class App:
         self.adapter_cb  = ttk.Combobox(top, textvariable=self.adapter_var,
                                          width=55, state="readonly")
         self.adapter_cb.grid(row=0, column=1, padx=8)
+        self.adapter_cb.bind("<<ComboboxSelected>>", self._on_adapter_selected)
 
         self.btn_scan = tk.Button(
             top, text="▶  Skanuj", width=12,
@@ -145,11 +147,38 @@ class App:
         self.vendor_filter_cb.bind("<<ComboboxSelected>>", self._on_vendor_filter_change)
         self._refresh_vendor_filter_options()
 
+        tk.Label(filter_bar, text="│", font=("Segoe UI", 8), fg="#aaa").pack(side="left", padx=(14, 8))
+        tk.Label(filter_bar, text="Legenda:", font=("Segoe UI", 8, "bold")).pack(side="left", padx=(0, 4))
+        for _color, _desc in [
+            ("#1565c0", "IP karty sieciowej"),
+            ("#2e7d32", "Ta sama podsieć  "),
+            ("#f57f17", "Inna podsieć  "),
+            ("#c62828", "Konflikt IP"),
+        ]:
+            tk.Label(filter_bar, text="●", font=("Segoe UI", 11, "bold"), fg=_color).pack(side="left", padx=(0, 2))
+            tk.Label(filter_bar, text=_desc, font=("Segoe UI", 8), fg="#444").pack(side="left", padx=(0, 8))
+
         # Columns: config first (gear), then priority cols, then secondary.
         # Total widths fit in ~967px available (1020px window − padding − scrollbar).
         # Priority: config, ip, producer, module_name, protocol — others shrink if needed.
         cols = ("config", "ip", "mac", "producer", "module_name", "device_desc", "protocol", "vendor_id", "device_id", "version", "adapter")
-        self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", height=8)
+
+        def _dot(color):
+            img = tk.PhotoImage(width=12, height=12)
+            img.put(color, to=(2, 1, 10, 11))
+            img.put(color, to=(1, 2, 11, 10))
+            return img
+
+        self._ip_dot_images = {
+            "local_adapter_ip": _dot("#1565c0"),
+            "same_subnet":      _dot("#2e7d32"),
+            "diff_subnet":      _dot("#f57f17"),
+            "duplicate_ip":     _dot("#c62828"),
+        }
+
+        self.tree = ttk.Treeview(table_frame, columns=cols, show="tree headings", height=8)
+        self.tree.column("#0", width=22, minwidth=22, stretch=False)
+        self.tree.heading("#0", text="")
 
         self.tree.heading("config",      text="")
         self.tree.heading("ip",          text="Adres IP")
@@ -178,16 +207,16 @@ class App:
         # sum of widths above = 947px — fits within ~967px available
 
         self.tree.bind("<Button-1>", self._on_tree_click)
+        self.tree.bind("<Double-1>", self._on_tree_double_click)
+        self.tree.bind("<Motion>", self._on_tree_motion)
 
         scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scroll.set)
         self.tree.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
 
-        # Row background colors for subnet/conflict detection
-        self.tree.tag_configure("duplicate_ip", background="#ffcdd2", foreground="#c62828")      # Red: duplicate IP
-        self.tree.tag_configure("same_subnet",  background="#c8e6c9", foreground="#2e7d32")      # Light green: same subnet
-        self.tree.tag_configure("diff_subnet",  background="#fff9c4", foreground="#f57f17")      # Light yellow: different subnet
+        # Light flash to confirm click on action cell.
+        self.tree.tag_configure("action_flash", background="#e3f2fd")
 
         # -- log --
         log_frame = tk.LabelFrame(self.root, text="Log", padx=8, pady=4)
@@ -232,6 +261,10 @@ class App:
     def _on_vendor_filter_change(self, _event=None):
         self._rebuild_table()
         self.log_message(f"Filtr producenta: {self.vendor_filter_var.get()}")
+
+    def _on_adapter_selected(self, _event=None):
+        self.clear_results()
+        self.log_message(f"Wybrano adapter: {self.adapter_var.get()}")
 
     def _producer_for_info(self, info):
         protocol = info.get("protocol") or info.get("type", "ARP")
@@ -350,7 +383,7 @@ class App:
         if protocol == "Profinet DCP":
             config_btn = "⚙"
         elif self._is_balluff_xg_ethercat(info):
-            config_btn = "EIP"
+            config_btn = "⚙"
         return (
             config_btn,
             info.get("ip", ""),
@@ -400,14 +433,18 @@ class App:
 
     def _rebuild_table(self):
         self._tree_row_device_map.clear()
+        self._tree_row_ip_state_map.clear()
         for row in self.tree.get_children():
             self.tree.delete(row)
         for info in self.found_devices:
             if self._is_visible(info):
-                tag = self._get_row_tag(info)
-                tags = (tag,) if tag else ()
-                row_id = self.tree.insert("", "end", values=self._device_to_row(info), tags=tags)
+                ip_state = self._get_ip_state(info)
+                row_values = list(self._device_to_row(info))
+                row_values[1] = self._format_ip_display(info.get("ip", ""), ip_state)
+                dot_img = self._ip_dot_images.get(ip_state)
+                row_id = self.tree.insert("", "end", image=dot_img or "", values=tuple(row_values))
                 self._tree_row_device_map[row_id] = info
+                self._tree_row_ip_state_map[row_id] = ip_state
 
     def _hex_to_text_details(self, hex_value):
         text = str(hex_value or "").strip()
@@ -791,31 +828,55 @@ class App:
         
         return False
 
-    def _get_row_tag(self, info: dict) -> str:
-        """Determine the row tag based on conflict/subnet status.
-        
-        Returns:
-        - "duplicate_ip"  : IP conflict (multiple MACs for same IP)
-        - "same_subnet"   : No conflict, but in same subnet as adapter
-        - "diff_subnet"   : No conflict, different subnet or no adapter IPs
-        - None            : No special status
-        """
+    def _is_local_adapter_ip(self, adapter_name: str, device_ip: str) -> bool:
+        if not device_ip or device_ip == "0.0.0.0":
+            return False
+
+        selected_index = self._get_selected_adapter_index()
+        selected_adapter = None
+        if 0 <= selected_index < len(self.adapters):
+            selected_adapter = self.adapters[selected_index]
+        else:
+            adapter_name_l = str(adapter_name or "").strip().lower()
+            for adapter in self.adapters:
+                name_l = str(adapter.get("name") or "").strip().lower()
+                desc_l = str(adapter.get("description") or "").strip().lower()
+                if adapter_name_l and (adapter_name_l == name_l or adapter_name_l == desc_l):
+                    selected_adapter = adapter
+                    break
+
+        if selected_adapter is None:
+            return False
+
+        ips = [str(ip).strip() for ip in selected_adapter.get("ips", []) if str(ip).strip()]
+        return device_ip in ips
+
+    def _get_ip_state(self, info: dict) -> str:
+        """Return IP status key for display marker and click behaviors."""
         adapter = info.get("adapter", "?")
         ip = info.get("ip", "")
-        
-        # Check for duplicate IP conflict first
+
+        if self._is_local_adapter_ip(adapter, ip):
+            return "local_adapter_ip"
+
         if self._is_ip_conflict(adapter, ip):
             return "duplicate_ip"
-        
-        # Check if in same subnet
+
         if ip and ip != "0.0.0.0":
             if self._is_ip_in_adapter_subnet(adapter, ip):
                 return "same_subnet"
-            else:
-                # Different subnet (or adapter has no IPs)
-                return "diff_subnet"
-        
-        return None
+            return "diff_subnet"
+
+        return "none"
+
+    def _format_ip_display(self, ip: str, ip_state: str) -> str:
+        # IP color is now represented by row text color (via tag)
+        return ip.strip()
+
+    def _strip_ip_marker(self, value: str) -> str:
+        text = str(value or "").strip()
+        text = re.sub(r"^[^0-9]*", "", text)
+        return text
 
     def _record_arp(self, adapter: str, ip: str, mac: str) -> bool:
         """Record one ARP observation (adapter, ip) → mac.
@@ -1167,6 +1228,7 @@ class App:
     def clear_results(self):
         self.found_devices.clear()
         self._tree_row_device_map.clear()
+        self._tree_row_ip_state_map.clear()
         with self._probe_lock:
             self._scheduled_protocol_probes.clear()
         self._arp_ip_mac.clear()
@@ -1179,7 +1241,7 @@ class App:
     # ── Tree click handler ────────────────────────────────────────────────────
 
     def _on_tree_click(self, event):
-        """Handle clicks on first action column (⚙ for Profinet, EIP for EtherCAT)."""
+        """Handle clicks on first action column (⚙ for supported devices)."""
         region = self.tree.identify_region(event.x, event.y)
         if region != "cell":
             return
@@ -1193,18 +1255,72 @@ class App:
             return
         if col_names[col_index] != "config":
             return
-        # cols order: config(0), ip(1), mac(2), ...
-        values = self.tree.item(row_id, "values")
-        if not values:
+        if not self.tree.set(row_id, "config"):
             return
         dev = self._tree_row_device_map.get(row_id)
         if dev is None:
             return
-        action = values[0]
-        if action == "⚙":
+        self._flash_tree_row(row_id)
+        if (dev.get("protocol") or "") == "Profinet DCP":
             self._open_profinet_config(dev)
-        elif action == "EIP":
+        elif self._is_balluff_xg_ethercat(dev):
             self._open_ethercat_eip_dialog(dev)
+
+    def _on_tree_motion(self, event):
+        region = self.tree.identify_region(event.x, event.y)
+        if region != "cell":
+            self.tree.configure(cursor="")
+            return
+        col_id = self.tree.identify_column(event.x)
+        row_id = self.tree.identify_row(event.y)
+        if not row_id:
+            self.tree.configure(cursor="")
+            return
+        col_index = int(col_id.lstrip("#")) - 1
+        col_names = self.tree["columns"]
+        if col_index < 0 or col_index >= len(col_names):
+            self.tree.configure(cursor="")
+            return
+        if col_names[col_index] == "config" and self.tree.set(row_id, "config") == "⚙":
+            self.tree.configure(cursor="hand2")
+        else:
+            self.tree.configure(cursor="")
+
+    def _on_tree_double_click(self, event):
+        region = self.tree.identify_region(event.x, event.y)
+        if region != "cell":
+            return
+        col_id = self.tree.identify_column(event.x)
+        row_id = self.tree.identify_row(event.y)
+        if not row_id:
+            return
+
+        col_index = int(col_id.lstrip("#")) - 1
+        col_names = self.tree["columns"]
+        if col_index < 0 or col_index >= len(col_names):
+            return
+        if col_names[col_index] != "ip":
+            return
+
+        ip_state = self._tree_row_ip_state_map.get(row_id)
+        if ip_state != "same_subnet":
+            return
+
+        ip_raw = self._strip_ip_marker(self.tree.set(row_id, "ip"))
+        if not ip_raw or ip_raw == "0.0.0.0":
+            return
+        webbrowser.open(f"http://{ip_raw}")
+        self.log_message(f"Otwieram panel urządzenia: http://{ip_raw}")
+
+    def _flash_tree_row(self, row_id: str):
+        prev_tags = self.tree.item(row_id, "tags")
+        self.tree.item(row_id, tags=("action_flash",))
+
+        def _restore():
+            if self.tree.exists(row_id):
+                self.tree.item(row_id, tags=prev_tags)
+
+        self.root.after(130, _restore)
 
     def _open_ethercat_eip_dialog(self, dev: dict):
         """Dialog for switching Balluff BNI XG EtherCAT device to Ethernet/IP."""
