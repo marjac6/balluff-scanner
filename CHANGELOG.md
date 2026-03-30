@@ -2,15 +2,11 @@ Changelog
 
 [1.2.0]
 
-- Added GUI action for Balluff BNI XG EtherCAT devices to trigger EtherCAT -> EtherNet/IP switch directly from the device list.
-- Implemented robust CoE switch sequence for Balluff multiprotocol modules:
-	- `0xF502:02` (Protocol After Reboot) written as explicit EIP enum value,
-	- `0xF503:01` (Action = Reboot),
-	- `0xF503:02` (Trigger = True).
-- Changed protocol-switch writes to 8-bit payloads for enum/bool objects to match device behavior.
-- Added strict target validation (vendor/product/serial) before switch execution and relaxed generic-name guard for valid BNI modules.
-- Added EtherCAT operation serialization lock to prevent scan/switch mailbox collisions.
-- Reduced pre-switch mailbox chatter and aligned switch timing with working reference traces.
+- Added IP status dot column with color legend (blue = own NIC, green = same subnet, yellow = other subnet, red = conflict).
+- Double-click on green IP opens device web panel in browser.
+- Selecting a different adapter clears the results table.
+- Added GUI action for Balluff BNI XG: switch EtherCAT → EtherNet/IP via CoE SDO sequence.
+- Fixed CoE switch sequence reliability (8-bit writes, target validation, mailbox serialization).
 
 [1.1.0]
 
