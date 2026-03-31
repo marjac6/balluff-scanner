@@ -105,7 +105,8 @@ class App:
         top.pack(fill="x", padx=10, pady=(10, 4))
         self._top_frame = top  # keep ref for retranslation
 
-        tk.Label(top, text=t("Skanuj:")).grid(row=0, column=0, sticky="w")
+        self._scan_label = tk.Label(top, text=t("Skanuj:"))
+        self._scan_label.grid(row=0, column=0, sticky="w")
         self.adapter_var = tk.StringVar(value=t("Wszystkie adaptery"))
         self.adapter_cb  = ttk.Combobox(top, textvariable=self.adapter_var,
                                          width=55, state="readonly")
@@ -316,6 +317,7 @@ class App:
     def _retranslate_ui(self) -> None:
         """Update all translatable widgets after a language switch."""
         self._top_frame.config(text=t("Adapter sieciowy"))
+        self._scan_label.config(text=t("Skanuj:"))
         # scan / clear buttons
         if self.scanning:
             self.btn_scan.config(text=t("⏹  Zatrzymaj"))
@@ -352,9 +354,10 @@ class App:
     def _show_changelog(self):
         win = tk.Toplevel(self.root)
         win.title("Changelog")
-        win.geometry("480x300")
-        win.resizable(False, False)
-        
+        win.geometry("560x420")
+        win.minsize(400, 300)
+        win.resizable(True, True)
+
         # Center dialog on parent window (support multi-monitor setups)
         win.update_idletasks()
         parent_x = self.root.winfo_x()
@@ -365,12 +368,36 @@ class App:
         dialog_h = win.winfo_height()
         x = parent_x + (parent_w - dialog_w) // 2
         y = parent_y + (parent_h - dialog_h) // 2
-        win.geometry(f"480x300+{x}+{y}")
-        
-        st = scrolledtext.ScrolledText(win, font=("Consolas", 8), state="normal")
-        st.pack(fill="both", expand=True, padx=8, pady=8)
-        st.insert("1.0", CHANGELOG)
-        st.configure(state="disabled")
+        win.geometry(f"560x420+{x}+{y}")
+
+        # Tab bar: PL / EN
+        tab_bar = tk.Frame(win)
+        tab_bar.pack(fill="x", padx=8, pady=(6, 0))
+        st = scrolledtext.ScrolledText(win, font=("Consolas", 8), state="disabled", wrap="word")
+        st.pack(fill="both", expand=True, padx=8, pady=(4, 8))
+
+        def _show(lang: str):
+            content = i18n.get_changelog(lang)
+            st.configure(state="normal")
+            st.delete("1.0", "end")
+            st.insert("1.0", content)
+            st.configure(state="disabled")
+            for code, btn in _tab_btns.items():
+                btn.config(relief="sunken" if code == lang else "flat",
+                           bd=1 if code == lang else 0)
+
+        _tab_btns = {}
+        for code, label in (("pl", "🇵🇱  PL"), ("en", "🇬🇧  EN")):
+            btn = tk.Button(
+                tab_bar, text=label,
+                font=("Segoe UI", 8), relief="flat", bd=0,
+                cursor="hand2", padx=6, pady=2,
+                command=lambda c=code: _show(c),
+            )
+            btn.pack(side="left", padx=(0, 4))
+            _tab_btns[code] = btn
+
+        _show(i18n.get_language())
 
     def _on_vendor_filter_change(self, _event=None):
         self._rebuild_table()
