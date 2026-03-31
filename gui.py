@@ -74,6 +74,8 @@ class App:
         self._arp_conflict_logged: set = set()
         self._tree_row_device_map: dict = {}
         self._tree_row_ip_state_map: dict = {}
+        self._tree_overlay_widgets: dict = {}
+        self._tree_overlay_refresh_pending = False
         self.vendor_filter_var = tk.StringVar(value=self._all_vendors_label)
         self._adapter_networks_by_mac: dict = {}
 
@@ -129,9 +131,12 @@ class App:
         #   device_id            — DeviceID / ProductCode / ProductName (zależnie od protokołu)
         #   version              — SW Version (EtherCAT) / Revision (Profinet)
         #   adapter
-        table_frame = tk.LabelFrame(self.root, text="Znalezione urządzenia",
-                                     padx=8, pady=6)
-        table_frame.pack(fill="both", expand=True, padx=10, pady=4)
+        main_pane = tk.PanedWindow(self.root, orient="vertical", sashrelief="raised", sashwidth=6, bd=0)
+        main_pane.pack(fill="both", expand=True, padx=10, pady=4)
+
+        table_frame = tk.LabelFrame(main_pane, text="Znalezione urządzenia",
+                         padx=8, pady=6)
+        main_pane.add(table_frame, minsize=260)
 
         filter_bar = tk.Frame(table_frame)
         filter_bar.pack(fill="x", pady=(0, 6))
@@ -158,10 +163,10 @@ class App:
             tk.Label(filter_bar, text="●", font=("Segoe UI", 11, "bold"), fg=_color).pack(side="left", padx=(0, 2))
             tk.Label(filter_bar, text=_desc, font=("Segoe UI", 8), fg="#444").pack(side="left", padx=(0, 8))
 
-        # Columns: config first (gear), then priority cols, then secondary.
+        # Columns: gear first, status second, then data columns.
         # Total widths fit in ~967px available (1020px window − padding − scrollbar).
-        # Priority: config, ip, producer, module_name, protocol — others shrink if needed.
-        cols = ("config", "ip", "mac", "producer", "module_name", "device_desc", "protocol", "vendor_id", "device_id", "version", "adapter")
+        # Priority: gear, status, ip, producer, module_name, protocol — others shrink if needed.
+        cols = ("config", "status", "ip", "mac", "producer", "module_name", "device_desc", "protocol", "vendor_id", "device_id", "version", "adapter")
 
         def _dot(color):
             img = tk.PhotoImage(width=12, height=12)
@@ -171,16 +176,14 @@ class App:
 
         self._ip_dot_images = {
             "local_adapter_ip": _dot("#1565c0"),
-            "same_subnet":      _dot("#2e7d32"),
-            "diff_subnet":      _dot("#f57f17"),
-            "duplicate_ip":     _dot("#c62828"),
+            "same_subnet": _dot("#2e7d32"),
+            "diff_subnet": _dot("#f57f17"),
+            "duplicate_ip": _dot("#c62828"),
         }
 
-        self.tree = ttk.Treeview(table_frame, columns=cols, show="tree headings", height=8)
-        self.tree.column("#0", width=22, minwidth=22, stretch=False)
-        self.tree.heading("#0", text="")
-
+        self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", height=8)
         self.tree.heading("config",      text="")
+        self.tree.heading("status",      text="")
         self.tree.heading("ip",          text="Adres IP")
         self.tree.heading("mac",         text="Adres MAC")
         self.tree.heading("producer",    text="Producent")
@@ -192,8 +195,9 @@ class App:
         self.tree.heading("version",     text="Wersja")
         self.tree.heading("adapter",     text="Adapter")
 
-        # config fixed; priority cols non-shrinkable; secondary cols shrink when window narrows.
-        self.tree.column("config",      width=30,  minwidth=30,  stretch=False)
+        # action/status fixed; priority cols non-shrinkable; secondary cols shrink when window narrows.
+        self.tree.column("config",      width=42,  minwidth=42,  stretch=False, anchor="center")
+        self.tree.column("status",      width=18,  minwidth=18,  stretch=False, anchor="center")
         self.tree.column("ip",          width=100, minwidth=100, stretch=False)
         self.tree.column("mac",         width=112, minwidth=60)
         self.tree.column("producer",    width=112, minwidth=90,  stretch=False)
@@ -207,24 +211,32 @@ class App:
         # sum of widths above = 947px — fits within ~967px available
 
         self.tree.bind("<Button-1>", self._on_tree_click)
+        self.tree.bind("<ButtonRelease-1>", self._on_tree_button_release, add="+")
         self.tree.bind("<Double-1>", self._on_tree_double_click)
         self.tree.bind("<Motion>", self._on_tree_motion)
+        self.tree.bind("<Configure>", lambda _event: self._schedule_tree_overlay_refresh(), add="+")
 
-        scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scroll.set)
+        self._tree_scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self._tree_yview)
+        self.tree.configure(yscrollcommand=self._on_tree_yscroll)
         self.tree.pack(side="left", fill="both", expand=True)
-        scroll.pack(side="right", fill="y")
+        self._tree_scrollbar.pack(side="right", fill="y")
 
         # Light flash to confirm click on action cell.
         self.tree.tag_configure("action_flash", background="#e3f2fd")
+        self._tree_fixed_columns = {
+            "config": 42,
+            "status": 18,
+        }
 
         # -- log --
-        log_frame = tk.LabelFrame(self.root, text="Log", padx=8, pady=4)
-        log_frame.pack(fill="x", padx=10, pady=(4, 2))
+        log_frame = tk.LabelFrame(main_pane, text="Log", padx=8, pady=4)
+        main_pane.add(log_frame, minsize=120)
 
         self.log = scrolledtext.ScrolledText(log_frame, height=5,
                                               font=("Consolas", 8), state="disabled")
-        self.log.pack(fill="x")
+        self.log.pack(fill="both", expand=True)
+
+        self.root.after_idle(lambda: main_pane.sash_place(0, 0, max(320, int(self.root.winfo_height() * 0.68))))
 
         # -- bottom bar --
         bottom = tk.Frame(self.root, bg="#f0f0f0", bd=1, relief="sunken")
@@ -379,13 +391,9 @@ class App:
             )
             device_desc = info.get("lldp_system_description", "")
 
-        config_btn = ""
-        if protocol == "Profinet DCP":
-            config_btn = "⚙"
-        elif self._is_balluff_xg_ethercat(info):
-            config_btn = "⚙"
         return (
-            config_btn,
+            "",
+            "",
             info.get("ip", ""),
             info.get("mac", ""),
             producer,
@@ -432,6 +440,7 @@ class App:
         return self._producer_for_info(info) == selected
 
     def _rebuild_table(self):
+        self._clear_tree_overlay_widgets()
         self._tree_row_device_map.clear()
         self._tree_row_ip_state_map.clear()
         for row in self.tree.get_children():
@@ -440,11 +449,122 @@ class App:
             if self._is_visible(info):
                 ip_state = self._get_ip_state(info)
                 row_values = list(self._device_to_row(info))
-                row_values[1] = self._format_ip_display(info.get("ip", ""), ip_state)
-                dot_img = self._ip_dot_images.get(ip_state)
-                row_id = self.tree.insert("", "end", image=dot_img or "", values=tuple(row_values))
+                config_btn = ""
+                if (info.get("protocol") or "") == "Profinet DCP":
+                    config_btn = "SET"
+                elif self._is_balluff_xg_ethercat(info):
+                    config_btn = "SET"
+
+                row_values[0] = config_btn
+                row_values[1] = ""
+                row_values[2] = self._format_ip_display(info.get("ip", ""), ip_state)
+                row_id = self.tree.insert("", "end", values=tuple(row_values))
                 self._tree_row_device_map[row_id] = info
                 self._tree_row_ip_state_map[row_id] = ip_state
+        self._enforce_fixed_tree_columns()
+        self._schedule_tree_overlay_refresh()
+
+    def _tree_yview(self, *args):
+        self.tree.yview(*args)
+        self._schedule_tree_overlay_refresh()
+
+    def _on_tree_yscroll(self, first, last):
+        self._tree_scrollbar.set(first, last)
+        self._schedule_tree_overlay_refresh()
+
+    def _schedule_tree_overlay_refresh(self):
+        if self._tree_overlay_refresh_pending:
+            return
+        self._tree_overlay_refresh_pending = True
+        self.root.after_idle(self._refresh_tree_overlay_widgets)
+
+    def _clear_tree_overlay_widgets(self):
+        for widget_pair in self._tree_overlay_widgets.values():
+            for widget in widget_pair.values():
+                widget.destroy()
+        self._tree_overlay_widgets.clear()
+
+    def _refresh_tree_overlay_widgets(self):
+        self._tree_overlay_refresh_pending = False
+
+        if not getattr(self, "tree", None):
+            return
+
+        style = ttk.Style()
+        tree_bg = style.lookup("Treeview", "background") or style.lookup("Treeview", "fieldbackground") or "#ffffff"
+        live_rows = set(self.tree.get_children())
+
+        for row_id in list(self._tree_overlay_widgets):
+            if row_id not in live_rows:
+                widget_pair = self._tree_overlay_widgets.pop(row_id)
+                for widget in widget_pair.values():
+                    widget.destroy()
+
+        for row_id, ip_state in self._tree_row_ip_state_map.items():
+            if not self.tree.exists(row_id):
+                continue
+
+            widget_pair = self._tree_overlay_widgets.setdefault(row_id, {})
+
+            config_bbox = self.tree.bbox(row_id, column="config")
+            config_widget = widget_pair.get("config")
+            config_value = self.tree.set(row_id, "config")
+            if config_bbox and config_value == "SET":
+                if config_widget is None:
+                    config_widget = tk.Button(
+                        self.tree,
+                        text="SET",
+                        bd=0,
+                        padx=4,
+                        pady=0,
+                        background="#1565c0",
+                        foreground="white",
+                        activebackground="#0d47a1",
+                        activeforeground="white",
+                        cursor="hand2",
+                        font=("Segoe UI", 7, "bold"),
+                        relief="flat",
+                        command=lambda rid=row_id: self._invoke_tree_config_action(rid),
+                    )
+                    widget_pair["config"] = config_widget
+                else:
+                    config_widget.configure(text="SET")
+                x, y, width, height = config_bbox
+                config_widget.place(x=x + max((width - 28) // 2, 0), y=y + max((height - 18) // 2, 0), width=28, height=18)
+            elif config_widget is not None:
+                config_widget.place_forget()
+
+            status_bbox = self.tree.bbox(row_id, column="status")
+            status_widget = widget_pair.get("status")
+            status_image = self._ip_dot_images.get(ip_state)
+            if status_bbox and status_image is not None:
+                if status_widget is None:
+                    status_widget = tk.Label(self.tree, image=status_image, bd=0, padx=0, pady=0, background=tree_bg)
+                    widget_pair["status"] = status_widget
+                else:
+                    status_widget.configure(image=status_image, background=tree_bg)
+                x, y, width, height = status_bbox
+                status_widget.place(x=x + max((width - 12) // 2, 0), y=y + max((height - 12) // 2, 0))
+            elif status_widget is not None:
+                status_widget.place_forget()
+
+    def _enforce_fixed_tree_columns(self):
+        for column_name, width in self._tree_fixed_columns.items():
+            self.tree.column(column_name, width=width, minwidth=width, stretch=False)
+
+    def _on_tree_button_release(self, _event=None):
+        self._enforce_fixed_tree_columns()
+        self._schedule_tree_overlay_refresh()
+
+    def _invoke_tree_config_action(self, row_id):
+        dev = self._tree_row_device_map.get(row_id)
+        if dev is None:
+            return
+        self._flash_tree_row(row_id)
+        if (dev.get("protocol") or "") == "Profinet DCP":
+            self._open_profinet_config(dev)
+        elif self._is_balluff_xg_ethercat(dev):
+            self._open_ethercat_eip_dialog(dev)
 
     def _hex_to_text_details(self, hex_value):
         text = str(hex_value or "").strip()
@@ -1227,6 +1347,7 @@ class App:
 
     def clear_results(self):
         self.found_devices.clear()
+        self._clear_tree_overlay_widgets()
         self._tree_row_device_map.clear()
         self._tree_row_ip_state_map.clear()
         with self._probe_lock:
@@ -1241,30 +1362,21 @@ class App:
     # ── Tree click handler ────────────────────────────────────────────────────
 
     def _on_tree_click(self, event):
-        """Handle clicks on first action column (⚙ for supported devices)."""
+        """Handle clicks on first action column for supported devices."""
         region = self.tree.identify_region(event.x, event.y)
+        if region == "separator" and event.x <= (self._tree_fixed_columns["config"] + self._tree_fixed_columns["status"] + 8):
+            return "break"
         if region != "cell":
             return
-        col_id = self.tree.identify_column(event.x)
         row_id = self.tree.identify_row(event.y)
         if not row_id:
             return
-        col_index = int(col_id.lstrip("#")) - 1
-        col_names = self.tree["columns"]
-        if col_index < 0 or col_index >= len(col_names):
+        if self.tree.identify_column(event.x) != "#1":
             return
-        if col_names[col_index] != "config":
+        if self.tree.set(row_id, "config") != "SET":
             return
-        if not self.tree.set(row_id, "config"):
-            return
-        dev = self._tree_row_device_map.get(row_id)
-        if dev is None:
-            return
-        self._flash_tree_row(row_id)
-        if (dev.get("protocol") or "") == "Profinet DCP":
-            self._open_profinet_config(dev)
-        elif self._is_balluff_xg_ethercat(dev):
-            self._open_ethercat_eip_dialog(dev)
+        self._invoke_tree_config_action(row_id)
+        return "break"
 
     def _on_tree_motion(self, event):
         region = self.tree.identify_region(event.x, event.y)
@@ -1276,12 +1388,7 @@ class App:
         if not row_id:
             self.tree.configure(cursor="")
             return
-        col_index = int(col_id.lstrip("#")) - 1
-        col_names = self.tree["columns"]
-        if col_index < 0 or col_index >= len(col_names):
-            self.tree.configure(cursor="")
-            return
-        if col_names[col_index] == "config" and self.tree.set(row_id, "config") == "⚙":
+        if col_id == "#1" and self.tree.set(row_id, "config") == "SET":
             self.tree.configure(cursor="hand2")
         else:
             self.tree.configure(cursor="")
