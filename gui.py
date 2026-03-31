@@ -1616,12 +1616,13 @@ class App:
 
         self.root.after(130, _restore)
 
-    def _open_ethercat_eip_dialog(self, dev: dict):
-        """Dialog for switching Balluff BNI XG EtherCAT device to Ethernet/IP."""
+    def _open_balluff_switch_dialog(self, dev: dict):
+        """Dialog for switching Balluff BNI XG EtherCAT device to different protocols (Profinet, EIP, Modbus)."""
         win = tk.Toplevel(self.root)
-        win.title("EtherCAT -> Ethernet/IP")
-        win.geometry("490x260")
-        win.resizable(False, False)
+        win.title("Przełączenie protokołu Balluff BNI XG")
+        win.geometry("520x340")
+        win.minsize(480, 320)
+        win.resizable(True, True)
         win.grab_set()
 
         # Center dialog on parent window (support multi-monitor setups)
@@ -1634,10 +1635,11 @@ class App:
         dialog_h = win.winfo_height()
         x = parent_x + (parent_w - dialog_w) // 2
         y = parent_y + (parent_h - dialog_h) // 2
-        win.geometry(f"490x260+{x}+{y}")
+        win.geometry(f"520x340+{x}+{y}")
 
         panel = tk.LabelFrame(win, text="Przełączenie interfejsu", padx=10, pady=8)
         panel.pack(fill="both", expand=True, padx=10, pady=10)
+        panel.columnconfigure(1, weight=1)
 
         module_name = dev.get("product_name") or dev.get("name") or "?"
         rows = [
@@ -1648,24 +1650,41 @@ class App:
         ]
         for i, (k, v) in enumerate(rows):
             tk.Label(panel, text=k, font=("Segoe UI", 8, "bold"), anchor="w").grid(row=i, column=0, sticky="w", padx=(0, 8))
-            tk.Label(panel, text=v, font=("Segoe UI", 8), anchor="w").grid(row=i, column=1, sticky="w")
+            tk.Label(panel, text=v, font=("Segoe UI", 8), anchor="w").grid(row=i, column=1, sticky="ew")
 
-        tk.Label(
+        # Protocol selection
+        tk.Label(panel, text="Docelowy protokół:", font=("Segoe UI", 8, "bold"), anchor="w").grid(row=4, column=0, sticky="w", padx=(0, 8), pady=(8, 0))
+        protocol_var = tk.StringVar(value="Ethernet IP")
+        protocol_combo = ttk.Combobox(
+            panel,
+            textvariable=protocol_var,
+            values=["Ethernet IP", "Profinet DCP", "Modbus TCP"],
+            state="readonly",
+            width=25,
+            font=("Segoe UI", 8),
+        )
+        protocol_combo.grid(row=4, column=1, sticky="ew", pady=(8, 0), padx=(0, 8))
+
+        info_lbl = tk.Label(
             panel,
             text="Akcja wyśle sekwencję CoE SDO (set + reboot): 0xF502:02, 0xF503:01, 0xF503:02.",
             font=("Segoe UI", 8),
             fg="#555",
-            wraplength=455,
             justify="left",
-            anchor="w",
-        ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(8, 0))
+            anchor="nw",
+        )
+        info_lbl.grid(row=5, column=0, columnspan=2, sticky="ew", pady=(8, 0), padx=(0, 8))
 
         status_var = tk.StringVar(value="")
-        status_lbl = tk.Label(panel, textvariable=status_var, font=("Segoe UI", 8), wraplength=455, anchor="w")
-        status_lbl.grid(row=5, column=0, columnspan=2, sticky="w", pady=(8, 0))
+        status_lbl = tk.Label(panel, textvariable=status_var, font=("Segoe UI", 8), anchor="nw", justify="left")
+        status_lbl.grid(row=6, column=0, columnspan=2, sticky="ew", pady=(8, 0), padx=(0, 8))
 
         def _switch():
             btn_switch.config(state="disabled")
+            selected_text = protocol_var.get()
+            protocol_map = {"Ethernet IP": "eip", "Profinet DCP": "profinet", "Modbus TCP": "modbus"}
+            selected_protocol = protocol_map.get(selected_text, "eip")
+            
             status_var.set("Wysyłanie sekwencji…")
             status_lbl.config(fg="#444")
 
@@ -1680,26 +1699,47 @@ class App:
             expected_serial = dev.get("serial_dec")
 
             def run():
-                ok, msg = switch_balluff_xg_to_eip(
-                    adapter,
-                    slave_index,
-                    expected_vendor_id=expected_vendor_id,
-                    expected_product_code=expected_product_code,
-                    expected_serial=expected_serial,
-                )
+                # Import and call the appropriate switch function
+                if selected_protocol == "profinet":
+                    from ethercat_scanner import switch_balluff_xg_to_profinet
+                    ok, msg = switch_balluff_xg_to_profinet(
+                        adapter,
+                        slave_index,
+                        expected_vendor_id=expected_vendor_id,
+                        expected_product_code=expected_product_code,
+                        expected_serial=expected_serial,
+                    )
+                elif selected_protocol == "modbus":
+                    from ethercat_scanner import switch_balluff_xg_to_modbus
+                    ok, msg = switch_balluff_xg_to_modbus(
+                        adapter,
+                        slave_index,
+                        expected_vendor_id=expected_vendor_id,
+                        expected_product_code=expected_product_code,
+                        expected_serial=expected_serial,
+                    )
+                else:  # eip
+                    from ethercat_scanner import switch_balluff_xg_to_eip
+                    ok, msg = switch_balluff_xg_to_eip(
+                        adapter,
+                        slave_index,
+                        expected_vendor_id=expected_vendor_id,
+                        expected_product_code=expected_product_code,
+                        expected_serial=expected_serial,
+                    )
 
                 def finish():
                     if ok:
                         status_var.set(f"✓ {msg}. Zrób ponowny skan, aby sprawdzić efekt.")
                         status_lbl.config(fg="#2e7d32")
                         self.log_message(
-                            f"[EtherCAT] Wysłano przełączenie do EIP: {module_name} (slave {slave_index})"
+                            f"[EtherCAT] Wysłano przełączenie do {selected_text}: {module_name} (slave {slave_index})"
                         )
                     else:
                         status_var.set(f"✗ {msg}")
                         status_lbl.config(fg="#c62828")
                         self.log_message(
-                            f"[EtherCAT] Błąd przełączenia do EIP: {module_name} (slave {slave_index}) -> {msg}"
+                            f"[EtherCAT] Błąd przełączenia do {selected_text}: {module_name} (slave {slave_index}) -> {msg}"
                         )
                     btn_switch.config(state="normal")
 
@@ -1711,7 +1751,7 @@ class App:
         btn_bar.pack(fill="x", padx=10, pady=(0, 8))
         btn_switch = tk.Button(
             btn_bar,
-            text="Przełącz na EIP",
+            text="Przełącz",
             command=_switch,
             bg="#1565c0",
             fg="white",
@@ -1719,6 +1759,12 @@ class App:
         )
         btn_switch.pack(side="left")
         tk.Button(btn_bar, text="Zamknij", command=win.destroy, font=("Segoe UI", 8)).pack(side="right")
+
+    # ── Legacy wrapper for backward compatibility ───────────────────────────
+
+    def _open_ethercat_eip_dialog(self, dev: dict):
+        """Legacy wrapper: calls _open_balluff_switch_dialog for backward compatibility."""
+        self._open_balluff_switch_dialog(dev)
 
     # ── Profinet config dialog ────────────────────────────────────────────────
 

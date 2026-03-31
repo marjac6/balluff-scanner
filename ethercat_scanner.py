@@ -72,8 +72,12 @@ SDO_INTER_WRITE_DELAY_S = 0.0
 POST_SDO_BEFORE_INIT_DELAY_S = 0.06
 POST_INIT_SETTLE_S = 2.5
 # Balluff docs: 0xF502:02 = Protocol After Reboot.
-# The protocol list is ordered as ATD, PNT, EIP, ECT, MBT, so EIP maps to 2.
+# The protocol list is ordered as ATD, PNT, EIP, ECT, MBT.
+# Note: 0=AUTO?, 1=?, 2=EIP, 3=?, 4=Modbus
+# Profinet value to be confirmed with Balluff documentation
+BALLUFF_PROTOCOL_AFTER_REBOOT_PROFINET = 3
 BALLUFF_PROTOCOL_AFTER_REBOOT_EIP = 2
+BALLUFF_PROTOCOL_AFTER_REBOOT_MODBUS = 4
 # Official ETG Vendor ID for Balluff is 0x010000E8.
 # Keep legacy 0x00000378 for compatibility with field captures and older tooling.
 BALLUFF_VENDOR_IDS = {0x010000E8, 0x00000378}
@@ -140,21 +144,29 @@ def _sdo_read_u32(slave, index: int, subindex: int) -> int | None:
         return None
 
 
-def switch_balluff_xg_to_eip(
+def switch_balluff_xg_protocol(
     adapter_name: str,
     slave_index: int,
+    target_protocol: str,  # "profinet" | "eip" | "modbus"
     expected_vendor_id: int | None = None,
     expected_product_code: int | None = None,
     expected_serial: int | None = None,
 ) -> tuple[bool, str]:
-    """Switch Balluff BNI XG EtherCAT slave to classic Ethernet/IP mode.
+    """Switch Balluff BNI XG EtherCAT slave to target protocol (Profinet, EtherNet/IP, or Modbus TCP).
 
-        The sequence uses mailbox CoE downloads:
-      1) 0xF502:02 = 1
-      2) 0xF503:01 = 1
-            3) 0xF503:02 = 1
-            4) keep session alive briefly without extra AL state writes
+    The sequence uses mailbox CoE downloads to 0xF502:02 (Protocol After Reboot).
     """
+    protocol_map = {
+        "profinet": (BALLUFF_PROTOCOL_AFTER_REBOOT_PROFINET, "Profinet"),
+        "eip": (BALLUFF_PROTOCOL_AFTER_REBOOT_EIP, "EtherNet/IP"),
+        "modbus": (BALLUFF_PROTOCOL_AFTER_REBOOT_MODBUS, "Modbus TCP"),
+    }
+    
+    if target_protocol.lower() not in protocol_map:
+        return False, f"Nieznany protokół: {target_protocol}"
+    
+    protocol_value, protocol_name = protocol_map[target_protocol.lower()]
+    
     if pysoem is None:
         return False, "pysoem nie jest dostępny"
 
@@ -215,7 +227,7 @@ def switch_balluff_xg_to_eip(
                 return False, f"Urządzenie nie pasuje do BNI XG* ({display_name})"
 
         sequence = (
-            (0xF502, 0x02, BALLUFF_PROTOCOL_AFTER_REBOOT_EIP),
+            (0xF502, 0x02, protocol_value),
             (0xF503, 0x01, 1),
             (0xF503, 0x02, 1),
         )
@@ -256,10 +268,10 @@ def switch_balluff_xg_to_eip(
         time.sleep(POST_INIT_SETTLE_S)
 
         if display_name:
-            return True, f"Wysłano sekwencję set + reboot na Ethernet/IP ({display_name})"
-        return True, "Wysłano sekwencję set + reboot na Ethernet/IP"
+            return True, f"✓ Wysłano sekwencję do {protocol_name} ({display_name}). Urządzenie uruchomi się ponownie w nowym protokole."
+        return True, f"✓ Wysłano sekwencję do {protocol_name}. Urządzenie uruchomi się ponownie w nowym protokole."
     except Exception as e:
-        log_exception(log, "Błąd przełączenia EtherCAT->EIP", e)
+        log_exception(log, "Błąd przełączenia protokołu EtherCAT", e)
         return False, f"Błąd: {e}"
     finally:
         try:
@@ -267,6 +279,64 @@ def switch_balluff_xg_to_eip(
         except Exception:
             pass
         _ECAT_MASTER_LOCK.release()
+
+
+def switch_balluff_xg_to_eip(
+    adapter_name: str,
+    slave_index: int,
+    expected_vendor_id: int | None = None,
+    expected_product_code: int | None = None,
+    expected_serial: int | None = None,
+) -> tuple[bool, str]:
+    """Legacy wrapper: Switch Balluff BNI XG EtherCAT slave to Ethernet/IP mode.
+    
+    Calls switch_balluff_xg_protocol() with target_protocol="eip" for backward compatibility.
+    """
+    return switch_balluff_xg_protocol(
+        adapter_name=adapter_name,
+        slave_index=slave_index,
+        target_protocol="eip",
+        expected_vendor_id=expected_vendor_id,
+        expected_product_code=expected_product_code,
+        expected_serial=expected_serial,
+    )
+
+
+def switch_balluff_xg_to_profinet(
+    adapter_name: str,
+    slave_index: int,
+    expected_vendor_id: int | None = None,
+    expected_product_code: int | None = None,
+    expected_serial: int | None = None,
+) -> tuple[bool, str]:
+    """Switch Balluff BNI XG EtherCAT slave to PROFINET DCP mode."""
+    return switch_balluff_xg_protocol(
+        adapter_name=adapter_name,
+        slave_index=slave_index,
+        target_protocol="profinet",
+        expected_vendor_id=expected_vendor_id,
+        expected_product_code=expected_product_code,
+        expected_serial=expected_serial,
+    )
+
+
+def switch_balluff_xg_to_modbus(
+    adapter_name: str,
+    slave_index: int,
+    expected_vendor_id: int | None = None,
+    expected_product_code: int | None = None,
+    expected_serial: int | None = None,
+) -> tuple[bool, str]:
+    """Switch Balluff BNI XG EtherCAT slave to Modbus TCP mode."""
+    return switch_balluff_xg_protocol(
+        adapter_name=adapter_name,
+        slave_index=slave_index,
+        target_protocol="modbus",
+        expected_vendor_id=expected_vendor_id,
+        expected_product_code=expected_product_code,
+        expected_serial=expected_serial,
+    )
+
 
 
 def _sdo_string_retry(slave, index: int, subindex: int = 0, attempts: int = 4, sleep_s: float = 0.03) -> str:
