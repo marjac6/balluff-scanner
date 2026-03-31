@@ -137,6 +137,7 @@ class App:
         table_frame = tk.LabelFrame(main_pane, text="Znalezione urządzenia",
                          padx=8, pady=6)
         main_pane.add(table_frame, minsize=260)
+        main_pane.paneconfigure(table_frame, stretch='always')
 
         filter_bar = tk.Frame(table_frame)
         filter_bar.pack(fill="x", pady=(0, 6))
@@ -232,13 +233,12 @@ class App:
 
         # -- log --
         log_frame = tk.LabelFrame(main_pane, text="Log", padx=8, pady=4)
-        main_pane.add(log_frame, minsize=120)
+        main_pane.add(log_frame, minsize=60)
+        main_pane.paneconfigure(log_frame, stretch='never')
 
-        self.log = scrolledtext.ScrolledText(log_frame, height=5,
+        self.log = scrolledtext.ScrolledText(log_frame, height=3,
                                               font=("Consolas", 8), state="disabled")
         self.log.pack(fill="both", expand=True)
-
-        self.root.after_idle(lambda: main_pane.sash_place(0, 0, max(320, int(self.root.winfo_height() * 0.68))))
 
         # -- bottom bar --
         bottom = tk.Frame(self.root, bg="#f0f0f0", bd=1, relief="sunken")
