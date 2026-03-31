@@ -223,6 +223,8 @@ class App:
 
         # Light flash to confirm click on action cell.
         self.tree.tag_configure("action_flash", background="#e3f2fd")
+        # Group header styling
+        self.tree.tag_configure("group_header", background="#efefef", foreground="#333333", font=("Segoe UI", 8, "bold"))
         self._tree_fixed_columns = {
             "config": 42,
             "status": 18,
@@ -458,8 +460,36 @@ class App:
         self._tree_row_ip_state_map.clear()
         for row in self.tree.get_children():
             self.tree.delete(row)
+        
+        # Group devices by protocol
+        by_protocol = {}
         for info in self.found_devices:
             if self._is_visible(info):
+                protocol = info.get("protocol") or "ARP"
+                if protocol not in by_protocol:
+                    by_protocol[protocol] = []
+                by_protocol[protocol].append(info)
+        
+        # Sort protocols: Profinet DCP first, then others alphabetically
+        protocol_order = ["Profinet DCP"]
+        other_protocols = sorted([p for p in by_protocol.keys() if p != "Profinet DCP"])
+        sorted_protocols = protocol_order + other_protocols
+        
+        # Add grouped rows
+        for protocol in sorted_protocols:
+            if protocol not in by_protocol:
+                continue
+            
+            devices = by_protocol[protocol]
+            
+            # Add protocol header row
+            header_values = [""] * len(self.tree["columns"])
+            header_values[3] = f"▸ {protocol} ({len(devices)})"  # Put protocol name in 'mac' column for visibility
+            header_row_id = self.tree.insert("", "end", values=tuple(header_values), tags=("group_header",))
+            self._tree_row_device_map[header_row_id] = None  # Mark as non-device row
+            
+            # Add device rows for this protocol
+            for info in devices:
                 ip_state = self._get_ip_state(info)
                 row_values = list(self._device_to_row(info))
                 config_btn = ""
@@ -474,6 +504,7 @@ class App:
                 row_id = self.tree.insert("", "end", values=tuple(row_values))
                 self._tree_row_device_map[row_id] = info
                 self._tree_row_ip_state_map[row_id] = ip_state
+        
         self._enforce_fixed_tree_columns()
         self._schedule_tree_overlay_refresh()
 
