@@ -259,119 +259,99 @@ def t(key: str) -> str:
 _CHANGELOG_EN = """\
 Changelog
 
+[1.3.0]
+
+- Added protocol switch: EtherCAT -> Profinet / Modbus TCP / Ethernet IP.
+- Added full PL/EN interface with automatic OS language detection.
+- Added language switcher in the top-right corner (PL/EN flags).
+- Added bilingual, resizable changelog window.
+
 [1.2.0]
 
-- Added IP status dot column with color legend (blue = own NIC, green = same subnet, yellow = other subnet, red = conflict).
-- Double-click on green IP opens device web panel in browser.
-- Selecting a different adapter clears the results table.
-- Added GUI action for Balluff BNI XG: switch EtherCAT → EtherNet/IP via CoE SDO sequence.
-- Fixed CoE switch sequence reliability (8-bit writes, target validation, mailbox serialization).
+- Added protocol switch: EtherCAT -> Profinet / Modbus TCP / Ethernet IP.
+- Added IP status markers and quick open of device web panel.
+- Improved scan behavior when changing network adapter.
 
 [1.1.0]
 
-- Added Profinet DCP device configuration from GUI (gear action per Profinet row): set IP address and station name.
-- Added post-save verification flow (Identify) to confirm whether IP/name persisted on device.
-- Fixed DCP Set frame format compatibility (FrameID 0xFEFD) to match standard tooling behavior.
-- Fixed DCP raw send source MAC handling on Windows/Npcap (use real adapter MAC instead of 00:00:00:00:00:00).
-- Improved DCP response handling for VLAN-tagged PN-DCP frames.
-- Improved verification messaging to avoid false "controller overwrite" conclusions when not confirmed.
-- Moved Profinet gear column to first table column and adjusted column sizing priorities to fit window width without horizontal scrolling.
-- Removed screenshot.png from repository.
+- Added Profinet device configuration from GUI (IP and station name).
+- Added verification after saving Profinet settings.
+- Improved Profinet UI layout and compatibility.
 
 [1.0.1]
 
-- Added device description column in the main table for protocol-specific metadata (for example Profinet type of station).
-- Added RFC 5227 style ARP conflict detection based on packet evidence (same IP seen with multiple MAC addresses).
-- Added row highlighting rules:
-\t- red for duplicate/conflicting IPs,
-\t- light green for devices in the same subnet as the selected adapter,
-\t- light yellow for devices outside the adapter subnet.
-- Added producer fallback from MAC OUI using the bundled IEEE vendor database (Scapy manuf data).
-- Extended Profinet DCP parsing to extract additional optional metadata including device family and firmware where available.
-- Fixed subnet coloring stability on Windows by hardening ipconfig parsing and adding caching.
+- Added device description column in the main table.
+- Added IP conflict detection and row coloring.
+- Improved vendor recognition and subnet detection.
 
 [1.0.0]
 
-- Vendor-agnostic branding and documentation
-- Unified device list: one row per physical device (except EtherCAT)
-- Dynamic protocol switching in-place (ARP/Profinet/EtherNet-IP/Modbus)
-- Protocol identity probing for EtherNet/IP and Modbus TCP
-- LLDP enrichment for firmware and supplemental metadata
-- Improved Profinet DCP parsing and field mapping
-- Improved logging controls with module-scoped debug
+- Unified device list and protocol detection.
+- Added LLDP and Profinet data enrichment.
+- Improved logging and diagnostics.
 
 [0.3.0]
 
-- Added EtherCAT scan support
+- Added EtherCAT scan support.
 
 [0.2.0]
 
-- Improved scan stability and adapter handling
-- Improved Profinet DCP discovery in all-adapter mode
-- Added GUI quality-of-life improvements
+- Improved scan stability and adapter handling.
+- Improved Profinet DCP discovery.
+- Added UI quality-of-life improvements.
 
 [0.1.0]
 
-- Initial release
+- Initial release.
 """
 
 _CHANGELOG_PL = """\
 Changelog
 
+[1.3.0]
+
+- Dodano możliwość zmiany protokołu: EtherCAT -> Profinet / Modbus TCP / Ethernet IP.
+- Dodano pełne tłumaczenie interfejsu PL/EN z automatycznym wykrywaniem języka systemu.
+- Dodano przełącznik języka w prawym górnym rogu (flagi PL/EN).
+- Dodano dwujęzyczne, skalowalne okno changelog.
+
 [1.2.0]
 
-- Dodano kolumnę z kolorową kropką statusu IP (niebieski = własna karta sieciowa, zielony = ta sama podsieć, żółty = inna podsieć, czerwony = konflikt).
-- Dwuklik na zielonym IP otwiera webpanel urządzenia w przeglądarce.
-- Wybór innego adaptera czyści tabelę wyników.
-- Dodano akcję GUI dla Balluff BNI XG: przełączenie EtherCAT → EtherNet/IP przez sekwencję CoE SDO.
-- Poprawiono niezawodność sekwencji przełączenia CoE (8-bitowe zapisy, walidacja targetu, serializacja skrzynek mailbox).
+- Dodano możliwość zmiany protokołu: EtherCAT -> Profinet / Modbus TCP / Ethernet IP.
+- Dodano znaczniki statusu IP i szybkie otwieranie panelu WWW urządzenia.
+- Poprawiono zachowanie skanowania przy zmianie adaptera sieciowego.
 
 [1.1.0]
 
-- Dodano konfigurację urządzeń Profinet DCP z GUI (akcja przycisku SET przy wierszu Profinet): ustawianie adresu IP i nazwy stacji.
-- Dodano mechanizm weryfikacji po zapisie (Identify) potwierdzający czy IP/nazwa zostały zachowane w urządzeniu.
-- Poprawiono kompatybilność formatu ramki DCP Set (FrameID 0xFEFD) zgodnie ze standardowym zachowaniem narzędzi.
-- Poprawiono obsługę źródłowego MAC przy wysyłaniu surowych ramek DCP na Windows/Npcap (zamiast 00:00:00:00:00:00 używany jest rzeczywisty MAC adaptera).
-- Poprawiono obsługę odpowiedzi DCP dla ramek PN-DCP ze znacznikiem VLAN.
-- Poprawiono komunikaty weryfikacji, aby unikać fałszywych wniosków o "nadpisaniu przez controller" gdy nie zostało to potwierdzone.
-- Przeniesiono kolumnę SET Profinet na pierwszą pozycję w tabeli; dostosowano priorytety szerokości kolumn tak, aby zmieściły się w oknie bez poziomego przewijania.
-- Usunięto plik screenshot.png z repozytorium.
+- Dodano konfigurację urządzeń Profinet z GUI (IP i nazwa stacji).
+- Dodano weryfikację po zapisie ustawień Profinet.
+- Uproszczono i poprawiono układ oraz kompatybilność Profinet.
 
 [1.0.1]
 
-- Dodano kolumnę z opisem urządzenia w głównej tabeli (metadane właściwe dla protokołu, np. typ stacji Profinet).
-- Dodano detekcję konfliktów IP w stylu RFC 5227 na podstawie dowodów z pakietów (ten sam IP widziany z wieloma adresami MAC).
-- Dodano reguły podświetlania wierszy:
-\t- czerwony dla zduplikowanych/konfliktujących IP,
-\t- jasnozielony dla urządzeń w tej samej podsieci co wybrany adapter,
-\t- jasnożółty dla urządzeń spoza podsieci adaptera.
-- Dodano zapasowe rozpoznawanie producenta z OUI MAC przy użyciu dołączonej bazy danych dostawców IEEE (dane Scapy manuf).
-- Rozszerzono parsowanie Profinet DCP o dodatkowe opcjonalne metadane, w tym rodzinę urządzenia i firmware (gdzie dostępne).
-- Poprawiono stabilność kolorowania podsieci na Windows przez wzmocnienie parsowania ipconfig i dodanie cachowania.
+- Dodano kolumnę opisu urządzenia w tabeli.
+- Dodano wykrywanie konfliktów IP i kolorowanie wierszy.
+- Poprawiono rozpoznawanie producenta i wykrywanie podsieci.
 
 [1.0.0]
 
-- Neutralna dla producenta identyfikacja wizualna i dokumentacja
-- Ujednolicona lista urządzeń: jeden wiersz na urządzenie fizyczne (z wyjątkiem EtherCAT)
-- Dynamiczne przełączanie protokołów w miejscu (ARP/Profinet/EtherNet-IP/Modbus)
-- Sondowanie tożsamości protokołu dla EtherNet/IP i Modbus TCP
-- Wzbogacanie danych przez LLDP (firmware i dodatkowe metadane)
-- Ulepszone parsowanie i mapowanie pól Profinet DCP
-- Ulepszone logi z debugiem w zakresie modułu
+- Ujednolicono listę urządzeń i wykrywanie protokołów.
+- Dodano wzbogacanie danych LLDP i Profinet.
+- Poprawiono logi i diagnostykę.
 
 [0.3.0]
 
-- Dodano obsługę skanowania EtherCAT
+- Dodano obsługę skanowania EtherCAT.
 
 [0.2.0]
 
-- Poprawiono stabilność skanowania i obsługę adapterów
-- Poprawiono wykrywanie Profinet DCP w trybie wszystkich adapterów
-- Poprawiono jakość interfejsu graficznego
+- Poprawiono stabilność skanowania i obsługę adapterów.
+- Poprawiono wykrywanie Profinet DCP.
+- Dodano usprawnienia interfejsu.
 
 [0.1.0]
 
-- Pierwsze wydanie
+- Pierwsze wydanie.
 """
 
 
