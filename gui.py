@@ -265,6 +265,19 @@ class App:
         win.title("Changelog")
         win.geometry("480x300")
         win.resizable(False, False)
+        
+        # Center dialog on parent window (support multi-monitor setups)
+        win.update_idletasks()
+        parent_x = self.root.winfo_x()
+        parent_y = self.root.winfo_y()
+        parent_w = self.root.winfo_width()
+        parent_h = self.root.winfo_height()
+        dialog_w = win.winfo_width()
+        dialog_h = win.winfo_height()
+        x = parent_x + (parent_w - dialog_w) // 2
+        y = parent_y + (parent_h - dialog_h) // 2
+        win.geometry(f"480x300+{x}+{y}")
+        
         st = scrolledtext.ScrolledText(win, font=("Consolas", 8), state="normal")
         st.pack(fill="both", expand=True, padx=8, pady=8)
         st.insert("1.0", CHANGELOG)
@@ -1523,6 +1536,18 @@ class App:
         win.resizable(False, False)
         win.grab_set()
 
+        # Center dialog on parent window (support multi-monitor setups)
+        win.update_idletasks()
+        parent_x = self.root.winfo_x()
+        parent_y = self.root.winfo_y()
+        parent_w = self.root.winfo_width()
+        parent_h = self.root.winfo_height()
+        dialog_w = win.winfo_width()
+        dialog_h = win.winfo_height()
+        x = parent_x + (parent_w - dialog_w) // 2
+        y = parent_y + (parent_h - dialog_h) // 2
+        win.geometry(f"490x260+{x}+{y}")
+
         panel = tk.LabelFrame(win, text="Przełączenie interfejsu", padx=10, pady=8)
         panel.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -1617,6 +1642,18 @@ class App:
         win.minsize(520, 500)
         win.resizable(True, True)
         win.grab_set()
+
+        # Center dialog on parent window (support multi-monitor setups)
+        win.update_idletasks()
+        parent_x = self.root.winfo_x()
+        parent_y = self.root.winfo_y()
+        parent_w = self.root.winfo_width()
+        parent_h = self.root.winfo_height()
+        dialog_w = win.winfo_width()
+        dialog_h = win.winfo_height()
+        x = parent_x + (parent_w - dialog_w) // 2
+        y = parent_y + (parent_h - dialog_h) // 2
+        win.geometry(f"560x520+{x}+{y}")
 
         content = tk.Frame(win)
         content.pack(fill="both", expand=True, padx=10, pady=(10, 4))
