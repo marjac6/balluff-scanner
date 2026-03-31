@@ -61,6 +61,7 @@ class App:
         self.root.minsize(720, 480)
         self.stop_event    = threading.Event()
         self.scanning      = False
+        self._scan_adapter_name = ""  # Track which adapter the current scan is using
         self.found_devices = []
         self.adapters = []
         self._adapter_signature = ()
@@ -290,8 +291,25 @@ class App:
         self.log_message(f"Filtr producenta: {self.vendor_filter_var.get()}")
 
     def _on_adapter_selected(self, _event=None):
-        self.clear_results()
-        self.log_message(f"Wybrano adapter: {self.adapter_var.get()}")
+        was_scanning = self.scanning
+        
+        # Get current adapter name BEFORE stopping scan
+        selected_index = self._get_selected_adapter_index()
+        if 0 <= selected_index < len(self.adapters):
+            self._scan_adapter_name = self.adapters[selected_index].get("name", "")
+        else:
+            self._scan_adapter_name = ""  # Empty means all adapters
+        
+        if self.scanning:
+            self._stop_scan()
+            self.clear_results()
+        
+        selected_adapter = self.adapter_var.get()
+        self.log_message(f"Wybrano adapter: {selected_adapter}")
+        
+        # Auto-start scan with new adapter only if it was already running
+        if was_scanning:
+            self._start_scan()
 
     def _producer_for_info(self, info):
         protocol = info.get("protocol") or info.get("type", "ARP")
@@ -763,6 +781,11 @@ class App:
         self.root.after(0, self._merge_lldp_info, info)
 
     def _merge_lldp_info(self, info):
+        # Filter: only accept results from current scan adapter
+        info_adapter = (info.get("adapter") or "").strip()
+        if self._scan_adapter_name and info_adapter != self._scan_adapter_name:
+            return  # Ignore results from other adapters
+        
         mac = (info.get("mac") or "").lower()
         ip  = info.get("ip", "")
         if not mac and not ip:
@@ -1131,6 +1154,12 @@ class App:
     def _add_device(self, info):
         """ARP discovery: find-or-create device entry, merge ARP data."""
         info = dict(info)
+        
+        # Filter: only accept results from current scan adapter
+        info_adapter = (info.get("adapter") or "").strip()
+        if self._scan_adapter_name and info_adapter != self._scan_adapter_name:
+            return  # Ignore results from other adapters
+        
         ip  = (info.get("ip")  or "").strip()
         mac = (info.get("mac") or "").strip()
         if not ip and not mac:
@@ -1260,6 +1289,12 @@ class App:
 
     def _add_profinet_device(self, info):
         info = dict(info)
+        
+        # Filter: only accept results from current scan adapter
+        info_adapter = (info.get("adapter") or "").strip()
+        if self._scan_adapter_name and info_adapter != self._scan_adapter_name:
+            return  # Ignore results from other adapters
+        
         ip  = (info.get("ip")  or "").strip()
         mac = (info.get("mac") or "").strip()
 
@@ -1305,6 +1340,11 @@ class App:
           device_id  = product_code (prawdziwy EtherCAT Product Code)
           version    = sw_version   (np. "1.3.1")
         """
+        # Filter: only accept results from current scan adapter
+        info_adapter = (info.get("adapter") or "").strip()
+        if self._scan_adapter_name and info_adapter != self._scan_adapter_name:
+            return  # Ignore results from other adapters
+        
         product_name = info.get("product_name", "")
         sw_version   = info.get("sw_version",   "")
         vendor_id    = info.get("vendor_id",    "")
@@ -1334,6 +1374,11 @@ class App:
 
     def _add_enip_device(self, info):
         info = dict(info)
+        
+        # Filter: only accept results from current scan adapter
+        info_adapter = (info.get("adapter") or "").strip()
+        if self._scan_adapter_name and info_adapter != self._scan_adapter_name:
+            return  # Ignore results from other adapters
         ip  = (info.get("ip")  or "").strip()
         mac = (info.get("mac") or "").strip()
 
@@ -1376,6 +1421,11 @@ class App:
 
     def _add_modbus_device(self, info):
         info = dict(info)
+        
+        # Filter: only accept results from current scan adapter
+        info_adapter = (info.get("adapter") or "").strip()
+        if self._scan_adapter_name and info_adapter != self._scan_adapter_name:
+            return  # Ignore results from other adapters
         ip  = (info.get("ip")  or "").strip()
         mac = (info.get("mac") or "").strip()
 
@@ -1413,6 +1463,7 @@ class App:
 
     def toggle_scan(self):
         if not self.scanning:
+            self.clear_results()  # Clear previous results before starting new scan
             self._start_scan()
         else:
             self._stop_scan()
@@ -1427,6 +1478,12 @@ class App:
         self.status_var.set("⏳ Skanowanie w toku…")
 
         selected_index = self._get_selected_adapter_index()
+        
+        # Set current scan adapter (for filtering incoming results)
+        if 0 <= selected_index < len(self.adapters):
+            self._scan_adapter_name = self.adapters[selected_index].get("name", "")
+        else:
+            self._scan_adapter_name = ""  # Empty means all adapters
 
         if selected_index < 0:
             self.log_message("Start skanowania ARP + Profinet DCP + EtherCAT oraz identyfikacji EtherNet/IP i Modbus TCP na wszystkich adapterach…")
