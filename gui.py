@@ -1113,20 +1113,106 @@ class App:
                 self.log_message(f"Wykryto urządzenie: {ip or mac}")
             if new_conflict:
                 adapter = (info.get("adapter") or "?").strip()
+                # If conflict detected on this IP, unmerge any previously merged Profinet+ARP
+                unmerged = self._unmerge_arp_profinet_by_ip(ip, adapter)
                 macs = sorted(self._arp_ip_mac.get((adapter, ip), set()))
                 key = (adapter, ip)
                 if key not in self._arp_conflict_logged:
                     self._arp_conflict_logged.add(key)
-                    self.log_message(
-                        f"[UWAGA] Konflikt IP w ARP ({adapter}): {ip} — "
-                        f"wiele MAC: {', '.join(macs)}"
-                    )
+                    msg = f"[UWAGA] Konflikt IP w ARP ({adapter}): {ip} — wiele MAC: {', '.join(macs)}"
+                    if unmerged:
+                        msg += " (rozpłączono scalony wpis)"
+                    self.log_message(msg)
+                if unmerged:
+                    self._rebuild_table()
         elif changed:
             self._refresh_vendor_filter_options()
             self._rebuild_table()
 
+        # After adding/updating ARP, try to merge with Profinet entries (same IP, no conflict)
+        if ip:
+            merged = self._merge_arp_profinet_by_ip(ip, info.get("adapter", "?"))
+            if merged:
+                self._rebuild_table()
+
         # Re-probe while scanning (with cooldown) so protocol switches are picked up without restart.
         self._schedule_identity_probes({"ip": dev.get("ip", ""), "adapter": dev.get("adapter", "?")})
+
+    def _unmerge_arp_profinet_by_ip(self, ip: str, adapter: str):
+        """When IP conflict detected, split merged Profinet+ARP back into separate entries."""
+        if not ip or ip in ("0.0.0.0", "255.255.255.255"):
+            return False
+        
+        profinet_dev = None
+        for dev in self.found_devices:
+            dev_ip = (dev.get("ip") or "").strip()
+            if dev_ip == ip and dev.get("protocol") == "Profinet DCP":
+                profinet_dev = dev
+                break
+        
+        if not profinet_dev:
+            return False  # No Profinet device to unmerge
+        
+        profinet_mac = (profinet_dev.get("mac") or "").lower().strip()
+        if not profinet_mac:
+            return False
+        
+        # Check how many MACs are registered for this IP+adapter combo
+        key = (adapter.strip(), ip.strip())
+        macs = self._arp_ip_mac.get(key, set())
+        if len(macs) <= 1:
+            return False  # Not actually a conflict
+        
+        # Find another MAC (not the Profinet one) to create separate ARP entry
+        other_macs = [m for m in macs if m.lower() != profinet_mac]
+        if not other_macs:
+            return False  # All MACs are the same, nothing to unmerge
+        
+        # Create a new ARP entry for first other MAC
+        other_mac = other_macs[0]
+        new_arp = {
+            "ip": ip,
+            "mac": other_mac,
+            "protocol": "ARP",
+            "adapter": adapter,
+        }
+        self.found_devices.append(new_arp)
+        return True
+
+    def _merge_arp_profinet_by_ip(self, ip: str, adapter: str):
+        """Find ARP + Profinet with same IP (no IP conflict) and merge them. Returns True if merged."""
+        if not ip or ip in ("0.0.0.0", "255.255.255.255"):
+            return False
+        
+        # Check if this IP is in conflict (multiple MACs on same adapter+IP)
+        key = (adapter.strip(), ip.strip())
+        if key in self._arp_ip_mac and len(self._arp_ip_mac[key]) > 1:
+            return False  # IP conflict, don't merge
+        
+        profinet = None
+        arp = None
+        
+        for dev in self.found_devices:
+            dev_ip = (dev.get("ip") or "").strip()
+            if dev_ip != ip:
+                continue
+            if dev.get("protocol") == "Profinet DCP":
+                profinet = dev
+            elif dev.get("protocol") == "ARP":
+                arp = dev
+        
+        if profinet and arp:
+            # Merge: copy Profinet data into ARP, then remove the Profinet entry
+            arp["protocol"] = "Profinet DCP"
+            for key in ("name_of_station", "type_of_station", "vendor_id", "device_id", 
+                       "device_role", "device_instance", "firmware", "vendor_name", "mac"):
+                if key in profinet and not arp.get(key):
+                    arp[key] = profinet[key]
+            # Remove duplicate Profinet entry
+            if profinet in self.found_devices:
+                self.found_devices.remove(profinet)
+            return True
+        return False
 
     def _add_profinet_device(self, info):
         info = dict(info)
@@ -1527,44 +1613,69 @@ class App:
         """Open the Profinet DCP configuration dialog for the given device."""
         win = tk.Toplevel(self.root)
         win.title("Konfiguracja Profinet DCP")
-        win.geometry("460x370")
-        win.resizable(False, False)
+        win.geometry("560x520")
+        win.minsize(520, 500)
+        win.resizable(True, True)
         win.grab_set()
 
-        # ── Device info header ────────────────────────────────────────────
-        header = tk.LabelFrame(win, text="Urządzenie", padx=8, pady=6)
-        header.pack(fill="x", padx=10, pady=(10, 4))
+        content = tk.Frame(win)
+        content.pack(fill="both", expand=True, padx=10, pady=(10, 4))
 
-        info_rows = [
-            ("Adres MAC:",    dev.get("mac",             "")),
-            ("Aktualny IP:",  dev.get("ip",              "")),
-            ("Nazwa stacji:", dev.get("name_of_station", "")),
-            ("Adapter:",      dev.get("adapter",         "")),
+        # ── Device info header ────────────────────────────────────────────
+        header = tk.LabelFrame(content, text="Urządzenie", padx=8, pady=6)
+        header.pack(fill="x", pady=(0, 4))
+        header.columnconfigure(1, weight=1)
+
+        header_fields = [
+            ("Adres MAC:", "mac"),
+            ("Aktualny IP:", "ip"),
+            ("Nazwa stacji:", "name_of_station"),
+            ("Adapter:", "adapter"),
         ]
-        for row_idx, (label, value) in enumerate(info_rows):
+        header_vars = {
+            key: tk.StringVar(value=(dev.get(key, "") or "—"))
+            for _label, key in header_fields
+        }
+
+        def _refresh_dialog_device_state(latest_info=None):
+            if latest_info:
+                for key in ("mac", "ip", "name_of_station", "adapter"):
+                    value = latest_info.get(key)
+                    if value:
+                        dev[key] = value.strip() if isinstance(value, str) else value
+
+            for _label, key in header_fields:
+                value = dev.get(key, "")
+                if key == "name_of_station" and value:
+                    value = str(value).lower()
+                    dev[key] = value
+                header_vars[key].set(value or "—")
+
+        for row_idx, (label, key) in enumerate(header_fields):
             tk.Label(header, text=label, anchor="w", font=("Segoe UI", 8, "bold")
                      ).grid(row=row_idx, column=0, sticky="w", padx=(0, 6))
-            tk.Label(header, text=value or "—", anchor="w", font=("Segoe UI", 8)
-                     ).grid(row=row_idx, column=1, sticky="w")
+            tk.Label(header, textvariable=header_vars[key], anchor="w", font=("Segoe UI", 8)
+                     ).grid(row=row_idx, column=1, sticky="ew")
 
         # ── IP settings ───────────────────────────────────────────────────
-        ip_frame = tk.LabelFrame(win, text="Zmień adres IP", padx=8, pady=6)
-        ip_frame.pack(fill="x", padx=10, pady=4)
+        ip_frame = tk.LabelFrame(content, text="Zmień adres IP", padx=8, pady=6)
+        ip_frame.pack(fill="x", pady=4)
+        ip_frame.columnconfigure(1, weight=1)
 
         tk.Label(ip_frame, text="Nowy adres IP:", font=("Segoe UI", 8)).grid(row=0, column=0, sticky="w")
         ip_var = tk.StringVar(value=dev.get("ip", ""))
         tk.Entry(ip_frame, textvariable=ip_var, width=18, font=("Segoe UI", 8)
-                 ).grid(row=0, column=1, padx=6, sticky="w")
+                 ).grid(row=0, column=1, padx=6, sticky="ew")
 
         tk.Label(ip_frame, text="Maska podsieci:", font=("Segoe UI", 8)).grid(row=1, column=0, sticky="w", pady=2)
         mask_var = tk.StringVar(value="255.255.255.0")
         tk.Entry(ip_frame, textvariable=mask_var, width=18, font=("Segoe UI", 8)
-                 ).grid(row=1, column=1, padx=6, sticky="w")
+                 ).grid(row=1, column=1, padx=6, sticky="ew")
 
         tk.Label(ip_frame, text="Brama domyślna:", font=("Segoe UI", 8)).grid(row=2, column=0, sticky="w")
         gw_var = tk.StringVar(value="0.0.0.0")
         tk.Entry(ip_frame, textvariable=gw_var, width=18, font=("Segoe UI", 8)
-                 ).grid(row=2, column=1, padx=6, sticky="w")
+                 ).grid(row=2, column=1, padx=6, sticky="ew")
 
         ip_permanent_var = tk.BooleanVar(value=True)
         tk.Checkbutton(ip_frame, text="Zapisz trwale (permanent)", variable=ip_permanent_var,
@@ -1572,8 +1683,8 @@ class App:
 
         ip_status_var = tk.StringVar(value="")
         ip_status_lbl = tk.Label(ip_frame, textvariable=ip_status_var, font=("Segoe UI", 8),
-                                  anchor="w", wraplength=390)
-        ip_status_lbl.grid(row=4, column=0, columnspan=2, sticky="w", pady=(2, 0))
+                                  anchor="w", justify="left", wraplength=500)
+        ip_status_lbl.grid(row=4, column=0, columnspan=2, sticky="ew", pady=(2, 0))
 
         def _verify_persistence_async(field_name: str, expected_value: str, set_msg: str, status_var, status_lbl):
             """Verify after SET whether value stayed on device or got overwritten by controller."""
@@ -1597,18 +1708,22 @@ class App:
                     actual_ip = (info.get("ip") or "").strip()
                     actual_name = (info.get("name_of_station") or "").strip().lower()
 
-                    # Refresh local row data from latest Identify response.
+                    # Refresh local row data and dialog header from latest Identify response.
+                    _refresh_dialog_device_state(info)
                     if actual_ip:
-                        dev["ip"] = actual_ip
+                        ip_var.set(actual_ip)
                     if actual_name:
-                        dev["name_of_station"] = actual_name
+                        name_var.set(actual_name)
                     self._rebuild_table()
 
                     if field_name == "ip":
                         expected = expected_value.strip()
                         if actual_ip == expected:
-                            status_var.set(f"✓ Zweryfikowano: IP utrzymany ({actual_ip})")
+                            status_var.set(f"✓ IP zmieniony na {actual_ip}")
                             status_lbl.config(fg="#2e7d32")
+                            # Merge ARP with Profinet if they share the same new IP (no conflict)
+                            self._merge_arp_profinet_by_ip(actual_ip, adapter_name)
+                            self._rebuild_table()
                         else:
                             if set_msg.startswith("OK"):
                                 status_var.set(
@@ -1628,7 +1743,7 @@ class App:
                     elif field_name == "name":
                         expected = expected_value.strip().lower()
                         if actual_name == expected:
-                            status_var.set(f"✓ Zweryfikowano: nazwa utrzymana ({actual_name})")
+                            status_var.set(f"✓ Nazwa zmieniona na '{actual_name}'")
                             status_lbl.config(fg="#2e7d32")
                         else:
                             if set_msg.startswith("OK"):
@@ -1667,10 +1782,10 @@ class App:
                 )
                 def finish():
                     if ok:
-                        confirmed = msg.startswith("OK")
-                        ip_status_var.set(f"✓ {msg}")
-                        ip_status_lbl.config(fg="#2e7d32" if confirmed else "#e65100")
                         dev["ip"] = ip_var.get().strip()
+                        _refresh_dialog_device_state()
+                        ip_status_var.set(f"✓ Zmiana wysłana ({msg})")
+                        ip_status_lbl.config(fg="#2e7d32")
                         self._rebuild_table()
                         _verify_persistence_async("ip", ip_var.get().strip(), msg, ip_status_var, ip_status_lbl)
                         self.log_message(
@@ -1689,13 +1804,14 @@ class App:
         btn_ip.grid(row=5, column=0, columnspan=2, pady=(6, 2))
 
         # ── Name settings ─────────────────────────────────────────────────
-        name_frame = tk.LabelFrame(win, text="Zmień nazwę stacji Profinet", padx=8, pady=6)
-        name_frame.pack(fill="x", padx=10, pady=4)
+        name_frame = tk.LabelFrame(content, text="Zmień nazwę stacji Profinet", padx=8, pady=6)
+        name_frame.pack(fill="x", pady=4)
+        name_frame.columnconfigure(1, weight=1)
 
         tk.Label(name_frame, text="Nowa nazwa:", font=("Segoe UI", 8)).grid(row=0, column=0, sticky="w")
         name_var = tk.StringVar(value=dev.get("name_of_station", ""))
         tk.Entry(name_frame, textvariable=name_var, width=30, font=("Segoe UI", 8)
-                 ).grid(row=0, column=1, padx=6, sticky="w")
+             ).grid(row=0, column=1, padx=6, sticky="ew")
 
         tk.Label(name_frame, text="(a–z, 0–9, myślnik, kropka; maks. 240 znaków)",
                  font=("Segoe UI", 7), fg="#666").grid(row=1, column=0, columnspan=2, sticky="w")
@@ -1706,8 +1822,8 @@ class App:
 
         name_status_var = tk.StringVar(value="")
         name_status_lbl = tk.Label(name_frame, textvariable=name_status_var, font=("Segoe UI", 8),
-                                    anchor="w", wraplength=390)
-        name_status_lbl.grid(row=3, column=0, columnspan=2, sticky="w", pady=(2, 0))
+                                    anchor="w", justify="left", wraplength=500)
+        name_status_lbl.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(2, 0))
 
         def _set_name():
             btn_name.config(state="disabled")
@@ -1723,10 +1839,10 @@ class App:
                 )
                 def finish():
                     if ok:
-                        confirmed = msg.startswith("OK")
-                        name_status_var.set(f"✓ {msg}")
-                        name_status_lbl.config(fg="#2e7d32" if confirmed else "#e65100")
                         dev["name_of_station"] = name_var.get().strip().lower()
+                        _refresh_dialog_device_state()
+                        name_status_var.set(f"✓ Zmiana wysłana ({msg})")
+                        name_status_lbl.config(fg="#2e7d32")
                         self._rebuild_table()
                         _verify_persistence_async("name", name_var.get().strip(), msg, name_status_var, name_status_lbl)
                         self.log_message(
@@ -1744,5 +1860,7 @@ class App:
                               bg="#1565c0", fg="white", command=_set_name)
         btn_name.grid(row=4, column=0, columnspan=2, pady=(6, 2))
 
-        tk.Button(win, text="Zamknij", command=win.destroy,
-                  font=("Segoe UI", 8)).pack(pady=(4, 8))
+        btn_bar = tk.Frame(win)
+        btn_bar.pack(fill="x", padx=10, pady=(0, 8))
+        tk.Button(btn_bar, text="Zamknij", command=win.destroy,
+              font=("Segoe UI", 8)).pack(side="right")
